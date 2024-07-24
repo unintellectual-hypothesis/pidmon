@@ -22,6 +22,7 @@ resetprop -n ro.lmk.psi_complete_stall_ms 1400
 resetprop -n ro.lmk.swap_util_max 100
 resetprop -n ro.lmk.thrashing_limit 30
 resetprop -n ro.lmk.thrashing_limit_decay 50
+resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
 resetprop -p --delete persist.device_config.lmkd_native.thrashing_limit_critical
 resetprop -p --delete lmkd.reinit
 
@@ -35,5 +36,3 @@ for queue in /sys/block/mmc*/queue
 do
   echo 0 > $queue/read_ahead_kb
 done
-
-
