@@ -1,21 +1,7 @@
-mount -o rw,remount /data
-[ ! "$MODPATH" ] && MODPATH=${0%/*}
-[ ! "$MODID" ] && MODID=`basename "$MODPATH"`
-UID=`id -u`
+#!/system/bin/sh
 
-# run
-. $MODPATH/function.sh
+while [ ! -d "/sdcard/Android" ]; do
+  sleep 1
+done
 
-# cleaning
-remove_sepolicy_rule
-
-
-
-
-
-
-
-
-
-
-
+rm -rf "/sdcard/Android/fog_mem_conf.txt"
