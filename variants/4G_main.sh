@@ -133,7 +133,7 @@ conf_hybrid_swap
 test_swappiness
 start_dynamic_swappiness
 
-sleep 15
+sleep 10
 conf_vm_param
 
 change_task_affinity "kswapd"
