@@ -10,7 +10,7 @@
         <ul>
             <li>Dynamic vm.swappiness and vm.vfs_cache_pressure based on CPU and I/O load, supports both kernel with swappiness over 100 and swappiness less than 100 like the fog-kribo kernel (Configurable)</li>
             <li>Optimizes LMKD to reduce the chance of background apps being killed</li>
-            <li>If ROM supports Xiaomi RAM Extension, perform small ZRAM Writeback after opening more than a certain number of apps and perform large ZRAM writeback when the phone is off (Configurable)</li>
+            <li>If ROM supports Xiaomi RAM Extension and /sys/block/zram0/writeback, perform small ZRAM Writeback after opening more than a certain number of apps and perform large ZRAM writeback when the phone is off (Configurable)</li>
             <li>Higher low pages-free zone with vm.extra_free_kbytes to reduce the probability of direct memory allocation (reduce random freezes during memory pressure)</li>
             <li>Injects essential libs, SystemUI, and in-display keyboard to cache and prevent it from being swapped out to ZRAM or Swapfile by the system which makes it unresponsive</li>
             <li>At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm</li>
