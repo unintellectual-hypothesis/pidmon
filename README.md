@@ -1,10 +1,7 @@
-# fog-mem-opt
-Reconstructs the RAM Management of fog/wind/rain devices
-
+# Redmi 10C Memory Management Optimization
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <h1>Redmi 10C Memory Management Optimization</h1>
 </head>
 <body>
     <div class="container">
