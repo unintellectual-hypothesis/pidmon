@@ -1,0 +1,204 @@
+#!/system/bin/sh
+# Thanks to Draco (tytydraco @ GitHub) and Matt Yang (yc9559 @ CoolApk)
+# If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
+# THANKS TO pedrozzz0 @ GitHub
+
+# For debug purposes
+[[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
+
+#####################
+# Variables
+#####################
+sys_frm="/system/framework"
+sys_bin="/system/bin"
+sys_lib="/system/lib64"
+vdr_lib="/vendor/lib64"
+dvk="/data/dalvik-cache"
+apx1="/apex/com.android.art/javalib"
+apx2="/apex/com.android.runtime/javalib"
+fscc_file_list=""
+fscc_log="/data/media/0/ktsr/fscc.log"
+ver="1.1.3"
+api_level=$(getprop ro.vendor.build.version.sdk)
+
+# Check for root permissions and bail if not granted
+[[ "$(id -u)" != "0" ]] && {
+	log_e "No root permissions. Exiting..."
+	exit 1
+}
+
+# Bail out if KTSR is found
+[[ -d "/data/adb/modules/KTSR/" ]] && { 
+	log_e "KTSR found, exiting..."
+	exit 1
+}
+
+log_i() {
+	echo "[$(date +'%Y-%m-%d %T')]: [*] $1" >"$fscc_log"
+	echo "" >>"$fscc_log"
+}
+
+log_d() {
+	echo "$1" >>"$fscc_log"
+	echo "$1"
+}
+
+log_e() {
+	echo "[!] $1" >"$fscc_log"
+	echo "[!] $1"
+}
+
+notif_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'FSCC is executing' tag 'FSCC is running...'" >/dev/null 2>&1; }
+notif_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'FSCC is executing' tag 'FSCC pinned libs successfully!'" >/dev/null 2>&1; }
+
+[[ "$(command -v busybox)" ]] && {
+	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
+	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
+	avail_ram=$(busybox free -m | awk '/Mem:/{print $7}')
+} || {
+	total_ram=$(free -m | awk '/Mem:/{print $2}')
+	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
+	avail_ram=$(free -m | awk '/Mem:/{print $7}')
+}
+
+sdk=$(getprop ro.build.version.sdk)
+[[ "$sdk" == "" ]] && sdk=$(getprop ro.vendor.build.version.sdk)
+[[ "$sdk" == "" ]] && sdk=$(getprop ro.vndk.version)
+
+# $1:apk_path $return:oat_path
+# OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+fscc_path_apk_to_oat() { echo "${1%/*}/oat"; }
+
+# $1:file/dir
+# Only append if object isn't already on file list
+fscc_list_append() { [[ ! "$fscc_file_list" == *"$1"* ]] && fscc_file_list="$fscc_file_list $1"; }
+
+# Only append if object doesn't already exists either on pinner service to avoid unnecessary memory expenses
+fscc_add_obj() {
+	[[ "$sdk" -lt "24" ]] && fscc_list_append "$1" || {
+		while IFS= read -r obj; do
+			[[ "$1" != "$obj" ]] && fscc_list_append "$1"
+		done <<<"$(dumpsys pinner | grep -E -i "$1" | awk '{print $1}')"
+	}
+}
+
+# $1:package_name
+# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+fscc_add_apk() { [[ "$1" != "" ]] && fscc_add_obj "$(pm path "$1" | head -1 | cut -d: -f2)"; }
+
+# $1:package_name
+fscc_add_dex() {
+	[[ "$1" != "" ]] \
+		&& {
+			# pm path -> "package:/system/product/priv-app/OPSystemUI/OPSystemUI.apk"
+			package_apk_path="$(pm path "$1" | head -1 | cut -d: -f2)"
+			# User app: OPSystemUI/OPSystemUI.apk -> OPSystemUI/oat
+			fscc_add_obj "${package_apk_path%/*}/oat"
+			# Remove apk name suffix
+			apk_nm="${package_apk_path%/*}"
+			# Remove path prefix
+			apk_nm="${apk_nm##*/}"
+			# System app: get dex & vdex
+			# /data/dalvik-cache/arm64/system@product@priv-app@OPSystemUI@OPSystemUI.apk@classes.dex
+		}
+	for dex in $(find "$dvk" | grep "@$apk_name@"); do
+		fscc_add_obj "$dex"
+	done
+}
+
+fscc_add_app_home() {
+	# Well, not working on Android 7.1
+	intent_act="android.intent.action.MAIN"
+	intent_cat="android.intent.category.HOME"
+	# "  packageName=com.microsoft.launcher"
+	pkg_nm="$(pm resolve-activity -a "$intent_act" -c "$intent_cat" | grep packageName | head -1 | cut -d= -f2)"
+	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.dex 16M/31M  53.2%
+	# /data/dalvik-cache/arm64/system@priv-app@OPLauncher2@OPLauncher2.apk@classes.vdex 120K/120K  100%
+	# /system/priv-app/OPLauncher2/OPLauncher2.apk 14M/30M  46.1%
+	fscc_add_apk "$pkg_nm"
+	fscc_add_dex "$pkg_nm"
+}
+
+fscc_add_app_ime() {
+	# "      packageName=com.baidu.input_yijia"
+	pkg_nm="$(ime list | grep packageName | head -1 | cut -d= -f2)"
+	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.dex 5M/17M  33.1%
+	# /data/dalvik-cache/arm/system@app@baidushurufa@baidushurufa.apk@classes.vdex 2M/7M  28.1%
+	# /system/app/baidushurufa/baidushurufa.apk 1M/28M  5.71%
+	# pin apk file in memory is not valuable
+	fscc_add_dex "$pkg_nm"
+}
+
+# $1:file
+fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -1)"; }
+
+fscc_status()
+{
+    # get the correct value after waiting for fscc loading files
+    sleep 2
+    if [ "$(ps -A | grep fscache-ctrl)" != "" ]; then
+        echo "Running. $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
+    else
+        echo "Not running."
+    fi
+}
+
+# After appending fscc_file_list
+# Multiple parameters, cannot be warped by ""
+fscc_start() { ${MODPATH}bin/fscache-ctrl -fdlb0 $fscc_file_list; }
+fscc_stop() { killall -9 fscache-ctrl; }
+
+# Return:status
+fscc_status() {
+	# Get the correct value after waiting for fscc loading files
+	sleep 2
+	[[ "$(pgrep -f "fscache-ctrl")" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
+}
+
+# System binaries (services)
+fscc_add_obj "$sys_bin/surfaceflinger"
+[[ "$(getprop ro.bionic.arch)" == "arm64" ]] && fscc_add_obj "$sys_bin/linker64" || fscc_add_obj "$sys_bin/linker"
+
+# System libraries (shared objects)
+fscc_add_obj "$sys_lib/libbinder.so"
+fscc_add_obj "$sys_lib/libandroid_servers.so"
+fscc_add_obj "$sys_lib/libandroid_runtime.so"
+fscc_add_obj "$sys_lib/libandroidfw.so"
+fscc_add_obj "$sys_lib/libandroid.so"
+fscc_add_obj "$sys_lib/libhwui.so"
+fscc_add_obj "$sys_lib/libinput.so"
+fscc_add_obj "$sys_lib/libinputreader.so"
+fscc_add_obj "$sys_lib/libvulkan.so"
+fscc_add_obj "$sys_lib/libinputreader.so"
+fscc_add_obj "$sys_lib/libcameraservice.so"
+fscc_add_obj "$sys_lib/libEGL.so"
+
+# Vendor libraries (shared objects)
+fscc_add_obj "$vdr_lib/sensors.ssc.so"
+fscc_add_obj "$vdr_lib/libCB.so"
+fscc_add_obj "$vdr_lib/libgsl.so"
+fscc_add_obj "$vdr_lib/sensors.ssc.so"
+fscc_add_obj "$vdr_lib/egl/libGLESv2_adreno.so"
+fscc_add_obj "$vdr_lib/hw/vulkan.adreno.so"
+fscc_add_obj "$vdr_lib/libgui_vendor.so"
+fscc_add_obj "$vdr_lib/libgpudataproducer.so"
+fscc_add_obj "$vdr_lib/libdpps.so"
+
+# APEX JARs
+fscc_add_apex_lib "core-libart.jar"
+
+# APEX libraries (shared binaries)
+fscc_add_apex_lib "dalvikvm"
+fscc_add_apex_lib "dex2oat"
+
+# Pin SystemUI
+fscc_add_apk "com.android.systemui"
+fscc_add_dex "com.android.systemui"
+
+# Pin input method and camera libs only if we really have enough RAM for it
+[[ "$total_ram" -ge "4096" ]] && {
+	fscc_add_app_ime
+	fscc_add_obj "$vdr_lib/libcamxexternalformatutils.so"
+	fscc_add_obj "$vdr_lib/libipebpsstriping.so"
+	fscc_add_obj "$vdr_lib/libipebpsstriping170.so"
+}

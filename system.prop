@@ -1,0 +1,6 @@
+id=fog-ram-opt
+name=Redmi 10C RAM Optimization
+version=v1.0
+versionCode=2024
+author=luvfreeee
+description=Reconstruct the memory management of fog/wind/rain devices. Supports 3GB, 4GB, 6GB and more variants
