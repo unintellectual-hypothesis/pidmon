@@ -1,5 +1,8 @@
 #!/system/bin/sh
 
+CURR_DIR="$(dirname "$0")"
+. "$CURR_DIR"/PATHS.sh
+
 swapfile_status()
 {
     local swap_info
