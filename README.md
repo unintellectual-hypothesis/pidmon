@@ -25,4 +25,4 @@ Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work we
 - 데이터/lswap/swap파일에 하이브리드 스왑 설정을 구성하고 스왑파일의 우선순위를 ZRAM보다 낮게 설정하여 Qualcomm의 PPR을 활용 (하이브리드 스왑 설정은 기본적으로 꺼져 있으며 구성 파일에서 켜기 가능).
 - 전력 효율이 높은 CPU를 사용하도록 kswapd 및 oom_reaper의 선호도를 변경하고, 최대 CPU 코어 수를 사용하여 kswapd를 실행하여 스왑 성능을 개선합니다.
 - 3GB/4GB/6GB RAM 변형에 따른 자동 ZRAM 디스크 크기 설정 (ZRAM 디스크 크기는 사용자 지정 가능하지만 너무 높게 설정하면 CPU 오버헤드와 비효율적인 압축 페이지 캐시가 추가됩니다.)
-- CUR_MAX_CACHED_PROCESSES를 높게 설정합니다. 자세한 내용은 [[여기](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)]를 참조하세요.
+- CUR_MAX_CACHED_PROCESSES를 높게 설정합니다. 자세한 내용은 [여기](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)를 참조하세요.
