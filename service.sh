@@ -7,6 +7,6 @@ if [ "$MEM_TOTAL" -le 3145728 ]; then
     sh $VAR_DIR/3G_main.sh
 elif [ "$MEM_TOTAL" -le 4197304 ]; then
     sh $VAR_DIR/4G_main.sh
-else
+elif [ "$MEM_TOTAL" -gt 4197304 ]; then
     sh $VAR_DIR/6G_more_main.sh
 fi
