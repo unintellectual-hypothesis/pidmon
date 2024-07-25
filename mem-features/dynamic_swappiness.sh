@@ -25,9 +25,9 @@ test_swappiness()
 start_dynamic_swappiness()
 {
   # Default threshold values
-  high_load_threshold="$(read_cfg_value high_load_threshold)"
+  high_load_threshold="$(read_cfg high_load_threshold)"
   [ "$high_load_threshold" == "" ] && high_load_threshold=50
-  medium_load_threshold="$(read_cfg_value medium_load_threshold)"
+  medium_load_threshold="$(read_cfg medium_load_threshold)"
   [ "$medium_load_threshold" == "" ] && medium_load_threshold=25
 
   while [ "$(awk '/^SwapTotal:/{print $2}' /proc/meminfo)" != 0 ]; do
