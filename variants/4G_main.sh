@@ -3,11 +3,11 @@ MODDIR=${0%/*}
 
 # load libraries
 MEM_FEAT_DIR="$MODDIR/mem-features"
-. $MEM_FEAT_DIR/TOOLS.sh
-. $MEM_FEAT_DIR/dynamic_swappiness.sh
-. $MEM_FEAT_DIR/intell_zram_writeback.sh
-. $MEM_FEAT_DIR/lswap_conf.sh
-. $MODDIR/bin/fscc
+. "$MEM_FEAT_DIR"/TOOLS.sh
+. "$MEM_FEAT_DIR"/dynamic_swappiness.sh
+. "$MEM_FEAT_DIR"/intell_zram_writeback.sh
+. "$MEM_FEAT_DIR"/lswap_conf.sh
+. "$MODDIR"/bin/fscc
 
 zram_algo=""
 zram_avail_algo="$(get_avail_comp_algo)"
@@ -51,13 +51,13 @@ conf_hybrid_swap()
     [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
 
     if [ "$(read_cfg enable_hybrid_swap)" -eq 1 ]; then
-        if [ -f $SWAP_DIR/swapfile ]; then
-            toybox swapon -d $SWAP_DIR/swapfile -p 1111
+        if [ -f "$SWAP_DIR"/swapfile ]; then
+            toybox swapon -d "$SWAP_DIR"/swapfile -p 1111
         else
-            mkdir $SWAP_DIR
-            dd if=/dev/zero of=$SWAP_DIR/swapfile bs=1M count=1024
-            toybox mkswap $SWAP_DIR/swapfile
-            toybox swapon -d $SWAP_DIR/swapfile -p 1111
+            mkdir "$SWAP_DIR"
+            dd if=/dev/zero of="$SWAP_DIR"/swapfile bs=1M count=1024
+            toybox mkswap "$SWAP_DIR"/swapfile
+            toybox swapon -d "$SWAP_DIR"/swapfile -p 1111
         fi
 
         # Enable Qualcomm's Per-Process Reclaim for Hybrid Swap Setup IF AND ONLY IF, ZRAM and Swapfile are on at the same time
@@ -72,19 +72,19 @@ conf_hybrid_swap()
 
 conf_vm_param()
 {
-    set_val "15" $VM/dirty_ratio
-    set_val "3" $VM/dirty_background_ratio
-    set_val "102400" $VM/extra_free_kbytes
+    set_val "15" "$VM"/dirty_ratio
+    set_val "3" "$VM"/dirty_background_ratio
+    set_val "102400" "$VM"/extra_free_kbytes
 
     # Don't need to set watermark_scale_factor since we already have vm.extra_free_kbytes. See /proc/zoneinfo for more info
-    set_val "1" $VM/watermark_scale_factor
+    set_val "1" "$VM"/watermark_scale_factor
 
-    set_val "8192" $VM/min_free_kbytes
-    set_val "0" $VM/direct_swappiness
-    set_val "4000" $VM/dirty_writeback_centisecs
+    set_val "8192" "$VM"/min_free_kbytes
+    set_val "0" "$VM"/direct_swappiness
+    set_val "4000" "$VM"/dirty_writeback_centisecs
 
     # Use multiple threads to run kswapd for better swapping performance
-    set_val "8" $VM/kswapd_threads
+    set_val "8" "$VM"/kswapd_threads
 }
 
 write_conf_file()
