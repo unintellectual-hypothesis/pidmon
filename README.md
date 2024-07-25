@@ -1,6 +1,7 @@
 # Redmi 10C Memory Management Optimization
 Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
-"Standing on the shoulders of giants"</div>
+ 
+"Standing on the shoulders of giants"
 
 ## Features?
 - Dynamic vm.swappiness and vm.vfs_cache_pressure based on CPU and I/O load, supports both kernel with swappiness over 100 and swappiness less than 100 like the fog-kribo kernel (Configurable)
