@@ -12,7 +12,8 @@ Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work we
 - At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm
 - Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR (Hybrid swap setup is by default turned off and can be turned on in the config file)
 -  Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
-- Automatic ZRAM disksize based on RAM variants 3GB/4GB/6GB (ZRAM disksize is customizable, although setting it too high will add a CPU overhead and inefficient compressed pagecache, feel free to experiment and see which one works best for your workload)
+- Automatic ZRAM disksize based on RAM variants 3GB/4GB/6GB (ZRAM disksize is customizable, but setting it too high will add a CPU overhead and inefficient compressed pagecache)
+- Set higher CUR_MAX_CACHED_PROCESSES. For more info check out [here](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md).
 
 ## 특징?
 - CPU 및 I/O 부하에 기반한 동적 vm.swappiness 및 vm.vfs_cache_pressure, 100 이상의 스와핑을 가진 커널과 fog-kribo 커널과 같은 100 미만의 스와핑을 모두 지원 (구성 가능).
@@ -24,3 +25,4 @@ Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work we
 - 데이터/lswap/swap파일에 하이브리드 스왑 설정을 구성하고 스왑파일의 우선순위를 ZRAM보다 낮게 설정하여 Qualcomm의 PPR을 활용 (하이브리드 스왑 설정은 기본적으로 꺼져 있으며 구성 파일에서 켜기 가능).
 - 전력 효율이 높은 CPU를 사용하도록 kswapd 및 oom_reaper의 선호도를 변경하고, 최대 CPU 코어 수를 사용하여 kswapd를 실행하여 스왑 성능을 개선합니다.
 - 3GB/4GB/6GB RAM 변형에 따른 자동 ZRAM 디스크 크기 설정 (ZRAM 디스크 크기는 사용자 지정 가능하지만 너무 높게 설정하면 CPU 오버헤드와 비효율적인 압축 페이지 캐시가 추가됩니다.)
+- CUR_MAX_CACHED_PROCESSES를 높게 설정합니다. 자세한 내용은 [[여기](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)]를 참조하세요.
