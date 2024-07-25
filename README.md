@@ -10,7 +10,7 @@ Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work we
 - Higher low pages-free zone with vm.extra_free_kbytes to reduce the probability of direct memory allocation (reduce random freezes during memory pressure)
 - Injects essential libs, SystemUI, and in-display keyboard to cache and prevent it from being swapped out to ZRAM or Swapfile by the system which makes it unresponsive
 - At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm
-- Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR. Default is off (swapfile size is based on RAM variants and can be turned on)
+- Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR (Hybrid swap setup is by default turned off and can be turned on in the config file)
 -  Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
 - Automatic ZRAM disksize based on RAM variants 3GB/4GB/6GB (ZRAM disksize is customizable, although setting it too high will add a CPU overhead and inefficient compressed pagecache, feel free to experiment and see which one works best for your workload)
 
