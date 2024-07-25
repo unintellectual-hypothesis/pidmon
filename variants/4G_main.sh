@@ -1,14 +1,13 @@
 #!/system/bin/sh
-MODDIR=${0%/*}
 MODULE_PATH="/data/adb/modules/fog-mem-opt"
 
 # load libraries
-MEM_FEAT_DIR="$MODULE_PATH/mem-features"
-. "$MEM_FEAT_DIR"/TOOLS.sh
-. "$MEM_FEAT_DIR"/dynamic_swappiness.sh
-. "$MEM_FEAT_DIR"/intell_zram_writeback.sh
-. "$MEM_FEAT_DIR"/lswap_conf.sh
-. "$MEM_FEAT_DIR"/kswapd_oom_affinity.sh
+MEM_FT_DIR="$MODULE_PATH/mem-features"
+. "$MEM_FT_DIR"/TOOLS.sh
+. "$MEM_FT_DIR"/dynamic_swappiness.sh
+. "$MEM_FT_DIR"/intelligent_zram_writeback.sh
+. "$MEM_FT_DIR"/lswap_conf.sh
+. "$MEM_FT_DIR"/kswapd_oom_affinity.sh
 . "$MODDIR"/bin/fscc
 
 zram_algo=""
