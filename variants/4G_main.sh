@@ -1,18 +1,33 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
+MODULE_PATH="/data/adb/modules/fog-mem-opt"
 
 # load libraries
-MEM_FEAT_DIR="$MODDIR/mem-features"
+MEM_FEAT_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEAT_DIR"/TOOLS.sh
 . "$MEM_FEAT_DIR"/dynamic_swappiness.sh
 . "$MEM_FEAT_DIR"/intell_zram_writeback.sh
 . "$MEM_FEAT_DIR"/lswap_conf.sh
+. "$MEM_FEAT_DIR"/kswapd_oom_affinity.sh
 . "$MODDIR"/bin/fscc
 
 zram_algo=""
 zram_avail_algo="$(get_avail_comp_algo)"
 zram_disksize=""
 enable_hybrid_swap=""
+swap_over_hundy=0
+
+# Test if kernel supports swappiness over 100 (Some ROM defaults swappiness to 100)
+test_swappiness()
+{
+  set_value "160" "$VM"/swappiness
+  new_swappiness=$(cat "$VM"/swappiness)
+  if [ "$new_swappiness" -eq 160 ]; then
+    swap_over_hundy=1
+  else
+    swap_over_hundy=0
+  fi
+}
 
 conf_zram_param()
 {
@@ -122,8 +137,10 @@ write_conf_file()
         write_cfg ""
     fi
     write_cfg "# Dynamic Swappiness. Change the values below between 0 ~ 100."
+    write_cfg ""
     write_cfg "# High Load Threshold. Default value is 50 (Recommended value between 50 ~ 75)"
     write_cfg "high_load_threshold=$high_load_threshold"
+    write_cfg ""
     write_cfg "# Medium Load Threshold. Default value is 25 (Recommended value between 25 ~ 50)"
     write_cfg "medium_load_threshold=$medium_load_threshold"
     write_cfg ""
@@ -132,14 +149,15 @@ write_conf_file()
 swap_all_off
 
 # Wait until boot finish
-resetprop -w sys.boot_completed 0
+wait_until_boot
 
-sleep 15
 swap_all_off
 conf_zram_param
 conf_hybrid_swap
 test_swappiness
 start_dynamic_swappiness
+
+sleep 15
 conf_vm_param
 
 change_task_affinity "kswapd"
