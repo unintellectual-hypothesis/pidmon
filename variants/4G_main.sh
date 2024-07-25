@@ -2,17 +2,17 @@
 MODDIR=${0%/*}
 
 # load libraries
-MEM_FEAT_DIR="$MODDIR/mem_features"
+MEM_FEAT_DIR="$MODDIR/mem-features"
 . $MEM_FEAT_DIR/TOOLS.sh
 . $MEM_FEAT_DIR/dynamic_swappiness.sh
 . $MEM_FEAT_DIR/intell_zram_writeback.sh
-. $MEM_FEAT_DIR/kswapd_oom_opt.sh
-. $MODDIR/bin/fscc.sh
+. $MEM_FEAT_DIR/lswap_conf.sh
+. $MODDIR/bin/fscc
 
 zram_algo=""
 zram_avail_algo="$(get_avail_comp_algo)"
 zram_disksize=""
-enable_hybrid_swap=0
+enable_hybrid_swap=""
 
 conf_zram_param()
 {
@@ -47,6 +47,9 @@ conf_zram_param()
 
 conf_hybrid_swap()
 {
+    enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
+    [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
+
     if [ "$(read_cfg enable_hybrid_swap)" -eq 1 ]; then
         if [ -f $SWAP_DIR/swapfile ]; then
             toybox swapon -d $SWAP_DIR/swapfile -p 1111
@@ -79,6 +82,8 @@ conf_vm_param()
     set_val "8192" $VM/min_free_kbytes
     set_val "0" $VM/direct_swappiness
     set_val "4000" $VM/dirty_writeback_centisecs
+
+    # Use multiple threads to run kswapd for better swapping performance
     set_val "8" $VM/kswapd_threads
 }
 
@@ -127,13 +132,12 @@ write_conf_file()
 swap_all_off
 wait_until_boot
 
+sleep 15
 swap_all_off
 conf_zram_param
 conf_hybrid_swap
 test_swappiness
 start_dynamic_swappiness
-
-sleep 10
 conf_vm_param
 
 change_task_affinity "kswapd"
@@ -151,4 +155,3 @@ fscc_start
 write_conf_file
 
 exit 0
-

@@ -3,20 +3,30 @@
 
 # load libraries
 CURR_DIR="$(dirname "$0")"
-. $CURR_DIR/TOOLS.sh
+. $CURR_DIR/PATHS.sh
 
 WRITEBACK_NUM=0
 apps=""
 app_switch=0
-app_switch_threshold=10
+app_switch_threshold=""
+
+# Checks ZRAM Writeback Support
+zram_wb_support()
+{
+    if [ -f $ZRAM_SYS/writeback ] && [ -f $ZRAM_SYS/backing_dev ] && [ -f $ZRAM_SYS/idle ]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
 
 # Configure the Backing Device for ZRAM (Xiaomi RAM Extension)
 set_zram_writeback()
 {
-    if [ -f "$ZRAM_SYS"/writeback ] || [ "$(getprop persist.miui.extm.enable)" -eq "1" ]; then
+    if [ "$(zram_wb_support)" -eq 1 ] || [ "$(getprop persist.miui.extm.enable)" -eq "1" ]; then
         loop_device=$(losetup -f)
         loop_num=$(echo "$loop_device" | grep -Eo '[0-9]{1,2}')
-        losetup $loop_device $MI_RAM_EXTENSION_FILE
+        losetup $loop_device /data/extm/extm_file
 
         set_val "$loop_device" $ZRAM_SYS/backing_dev
         set_val "0" $ZRAM_SYS/writeback_limit_enable
@@ -56,15 +66,6 @@ zram_on()
     fi
 }
 
-zram_writeback_support()
-{
-    if [ -f $ZRAM_SYS/writeback ] && [ -f $ZRAM_SYS/backing_dev ] && [ $ZRAM_SYS/idle ]; then
-        echo "1"
-    else
-        echo "0"
-    fi
-}
-
 zram_get_comp_alg()
 {
     local str
@@ -87,6 +88,11 @@ zram_status()
 # Setup Automatic ZRAM Writeback after switching more than number of specified apps
 auto_zram_writeback()
 {
+
+    # Default switch app threshold value
+    app_switch_threshold="$(read_cfg app_switch_threshold)"
+    [ "$app_switch_threshold" == "" ] && app_switch_threshold=10
+
     if [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ] && [ "$(zram_writeback_support)" -eq 1 ]; then
         while [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; do
             APP=$(dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}')

@@ -1,5 +1,6 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
+MEM_TOTAL="$(awk '/^MemTotal:/{print $2}' /proc/meminfo)"
 
 # LMKD Optimization
 resetprop -n ro.lmk.use_new_strategy 1
@@ -22,9 +23,18 @@ resetprop -n ro.lmk.psi_complete_stall_ms 1400
 resetprop -n ro.lmk.swap_util_max 100
 resetprop -n ro.lmk.thrashing_limit 30
 resetprop -n ro.lmk.thrashing_limit_decay 50
-resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
 resetprop -p --delete persist.device_config.lmkd_native.thrashing_limit_critical
 resetprop -p --delete lmkd.reinit
+
+# LMKD Minfree Levels, Thanks to helloklf @ GitHub
+if [ "$MEM_TOTAL" -le 3145728 ]; then
+  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
+elif [ "$MEM_TOTAL" -le 4194304 ]; then
+  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
+elif [ "$MEM_TOTAL" -gt 4194304 ]; then
+  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
+fi
+
 
 # I/O Optimization for UFS
 for queue in /sys/block/dm*/queue
