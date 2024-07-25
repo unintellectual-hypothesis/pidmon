@@ -8,7 +8,7 @@ Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work we
 - Optimizes LMKD to reduce the chance of background apps being killed
 - If ROM supports Xiaomi RAM Extension and /sys/block/zram0/writeback, perform small ZRAM Writeback after opening more than a certain number of apps and perform large ZRAM writeback when the phone is off (Configurable)
 - Higher low pages-free zone with vm.extra_free_kbytes to reduce the probability of direct memory allocation (reduce random freezes during memory pressure)
-- Injects essential libs, SystemUI, and in-display keyboard to cache and prevent it from being swapped out to ZRAM or Swapfile by the system which makes it unresponsive
+- Injects essential libs and SystemUI to cache and prevent it from being swapped out to ZRAM or Swapfile by the kernel which makes the system unresponsive
 - At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm
 - Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR (Hybrid swap setup is by default turned off and can be turned on in the config file)
 -  Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
