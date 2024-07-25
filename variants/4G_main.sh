@@ -130,7 +130,9 @@ write_conf_file()
 }
 
 swap_all_off
-wait_until_boot
+
+# Wait until boot finish
+resetprop -w sys.boot_completed 0
 
 sleep 15
 swap_all_off
