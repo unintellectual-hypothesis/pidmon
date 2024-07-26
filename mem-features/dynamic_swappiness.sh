@@ -23,7 +23,6 @@ test_swappiness()
     fi
 }
 
-
 # Dynamic swappiness & vfs_cache_pressure iff Swap Exists based on /proc/loadavg
 start_dynamic_swappiness()
 {
@@ -34,7 +33,7 @@ start_dynamic_swappiness()
     swappiness_change_rate="$(read_cfg swappiness_change_rate)"
     [ "$swappiness_change_rate" == "" ] && swappiness_change_rate=15
 
-    while [ "$(awk '/^SwapTotal:/{print $2}' /proc/meminfo)" != 0 ]; do
+    while true; do
     load_avg=$(awk  '{printf "%.0f", ($1 * 100 / 8)}'  /proc/loadavg)
         if [ "$load_avg" -ge "$high_load_threshold" ]; then
             resetprop -n ro.lmk.use_minfree_levels false

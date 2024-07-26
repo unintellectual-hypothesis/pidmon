@@ -9,22 +9,13 @@ MODULE_PATH="${MODULE_PATH%/variants}"
 # load libraries
 MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEATURES_DIR"/tools.sh
+. "$MEM_FEATURES_DIR"/dynamic_swappiness.sh
+. "$MEM_FEATURES_DIR"/hybrid_swap.sh
 . "$MEM_FEATURES_DIR"/intelligent_zram_writeback.sh
+. "$MEM_FEATURES_DIR"/kswapd_oom_aff.sh
 
 zram_disksize=""
 zram_algo=""
-
-# Test if kernel supports swappiness over 100 (Some ROM defaults swappiness to 100)
-test_swappiness()
-{
-  set_val "180" "$VM"/swappiness
-  new_swappiness=$(cat "$VM"/swappiness)
-  if [ "$new_swappiness" -eq 180 ]; then
-    swap_over_hundy=1
-  else
-    swap_over_hundy=0
-  fi
-}
 
 conf_vm_param()
 {
@@ -97,41 +88,43 @@ write_conf_file()
 resetprop -w sys.boot_completed 0
 sleep 2
 
-# Disable again, because some ROMS activate ZRAM after boot
+
+# Disable all swap partitions
 swap_all_off
 zram_reset
 
+# We must wait until device is unlocked, or we can't write to /sdcard
 wait_until_unlock
+
+# Configure ZRAM
 conf_zram_param
 
-# Start the rest of the script a little late to run the system first
+# Start the rest of the script a little late to avoid collisions
 sleep 10
+
+# Configure virtual machine parameters
 conf_vm_param
+
+# Test if system supports swappiness > 100
 test_swappiness
 
-# Dynamic swappiness & vfs_cache_pressure based on /proc/loadavg
+# Start dynamic swappiness
 start_dynamic_swappiness
 
+# Start intelligent ZRAM writeback
 start_auto_zram_writeback
-conf_hybrid_swap
 
+# Initialize hybrid swap setup, if enabled
+setup_hybrid_swap
+
+# Change affinity of kswapd and oom_reaper
 change_task_affinity "kswapd"
 change_task_affinity "oom_reaper"
 change_task_nice "kswapd"
 change_task_nice "oom_reaper"
 
-# Start FSCC
-"$MODULE_PATH"/system/bin/fscc
+# Start Filesystem Cache Control
+"$MEM_FEATURES_DIR"/fscc.sh
 
 # LMKD Minfree Levels, Thanks to helloklf @ GitHub
-if [ "$MEM_TOTAL" -le 3145728 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
-elif [ "$MEM_TOTAL" -le 4194304 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
-elif [ "$MEM_TOTAL" -gt 4194304 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
-fi
 
-write_conf_file
-
-exit 0

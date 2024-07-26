@@ -42,7 +42,7 @@ swapfile_on()
     fi
 }
 
-conf_swapfile_param()
+setup_hybrid_swap()
 {
     enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
     [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
