@@ -13,11 +13,11 @@ ui_print ""
 set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 
 ui_print ""
-ui_print "• Redmi 10c RAM Optimization Installed Successfully"
+ui_print "• Redmi 10c Memory Optimization Installed Successfully"
 ui_print "• Configuration file is located in /sdcard/Android/fog_mem_config.txt"
 ui_print "• Please Reboot Now"
 ui_print ""
-ui_print "• Redmi 10c RAM 최적화가 성공적으로 설치되었습니다"
+ui_print "• Redmi 10c Memory 최적화가 성공적으로 설치되었습니다"
 ui_print "• 구성 파일은 /sdcard/Android/fog_mem_config.txt에 있습니다"
 ui_print "• 지금 기기를 재부팅하세요"
 ui_print ""
