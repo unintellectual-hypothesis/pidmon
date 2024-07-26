@@ -4,3 +4,4 @@ version=v1.1
 versionCode=2024
 author=unintellectual-hypothesis
 description=Reconstructs the memory management of fog devices. Supports 3GB, 4GB, 6GB and more variants
+updateJson=https://raw.githubusercontent.com/unintellectual-hypothesis/fog-memory-opt/update.json
