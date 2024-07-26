@@ -19,33 +19,6 @@ fscc_log="/data/media/0/ktsr/fscc.log"
 ver="1.1.3"
 api_level=$(getprop ro.vendor.build.version.sdk)
 
-# Check for root permissions and bail if not granted
-[[ "$(id -u)" != "0" ]] && {
-	log_e "No root permissions. Exiting..."
-	exit 1
-}
-
-# Bail out if KTSR is found
-[[ -d "/data/adb/modules/KTSR/" ]] && { 
-	log_e "KTSR found, exiting..."
-	exit 1
-}
-
-log_i() {
-	echo "[$(date +'%Y-%m-%d %T')]: [*] $1" >"$fscc_log"
-	echo "" >>"$fscc_log"
-}
-
-log_d() {
-	echo "$1" >>"$fscc_log"
-	echo "$1"
-}
-
-log_e() {
-	echo "[!] $1" >"$fscc_log"
-	echo "[!] $1"
-}
-
 [[ "$(command -v busybox)" ]] && {
 	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
 	total_ram_kb=$(grep [0-9] /proc/meminfo | awk '/kB/{print $2}' | head -1)
