@@ -95,8 +95,8 @@ write_conf_file()
     clear_cfg
     write_cfg "Welcome Back"
     write_cfg ""
-    write_cfg "Redmi 10C RAM Management"
-    write_cfg "——————————————————"
+    write_cfg "Redmi 10C Memory Management Optimization"
+    write_cfg "——————————————————————————————————"
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
     write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
     write_cfg "Last time module executed: $(date '+%Y-%m-%d %H:%M:%S')"

@@ -23,7 +23,7 @@ change_task_nice()
     ps_right="$(ps -Ao pid,args)"
     for temp_pid in $(echo "$ps_right" | grep "$1" | awk '{print $1}'); do
         for temp_tid in $(ls "/proc/$temp_pid/task/"); do
-            renice -p -n "-2" "$temp_tid"
+            renice -n "-2" -p "$temp_tid"
         done
     done
 }

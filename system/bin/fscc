@@ -4,6 +4,10 @@
 # THANKS TO pedrozzz0 @ GitHub
 MODDIR=${0%/*}
 
+# Set Original Module Directory
+MODULE_PATH="$(dirname $(readlink -f "$0"))"
+MODULE_PATH="${MODULE_PATH%/bin%/system}"
+
 # Load libraries 
 MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEATURES_DIR"/paths.sh
