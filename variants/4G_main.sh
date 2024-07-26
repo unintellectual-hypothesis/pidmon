@@ -17,6 +17,59 @@ MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 zram_disksize=""
 zram_algo=""
 
+conf_zram_param()
+{
+    # load size from file
+    zram_disksize="$(read_cfg zram_disksize)"
+    case "$zram_disksize" in
+        0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
+        *) zram_disksize=2.5 ;;
+    esac
+
+    # load algorithm from file, use lz0 as default
+    zram_algo="$(read_cfg zram_algo)"
+    [ "$zram_algo" == "" ] && zram_algo="lz0"
+
+    # ~2.8x compression ratio
+    # higher disksize result in larger space-inefficient SwapCache
+    case "$zram_disksize" in
+        0)  swap_all_off ;;
+        0.5)  zram_on 512M 160M "$zram_algo" ;;
+        1)  zram_on 1024M 360M "$zram_algo" ;;
+        1.5)  zram_on 1536M 540M "$zram_algo" ;;
+        2)  zram_on 2048M 720M "$zram_algo" ;;
+        2.5)  zram_on 2560M 900M "$zram_algo" ;;
+        3)  zram_on 3072M 1080M "$zram_algo" ;;
+        4)  zram_on 4096M 1440M "$zram_algo" ;;
+        5)  zram_on 5120M 1800M "$zram_algo" ;;
+        6)  zram_on 6144M 2160M "$zram_algo" ;;
+        8)  zram_on 8192M 2880M "$zram_algo" ;;
+    esac
+}
+
+setup_hybrid_swap()
+{
+    enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
+    [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
+
+    # Load size from file
+    swapfile_sz="$(read_cfg swapfile_sz)"
+    case "$swapfile_sz" in
+        0|0.5|1|1.5|2|2.5|3) ;;
+        *) swapfile_sz=1 ;;
+    esac
+
+    case "$swapfile_sz" in
+        0)  swap_all_off ;;
+        0.5)  swapfile_on 512 ;;
+        1)  swapfile_on 1024 ;;
+        1.5)  swapfile_on 1536 ;;
+        2)  swapfile_on 2048 ;;
+        2.5)  swapfile_on 2560 ;;
+        3)  swapfile_on 3072 ;;
+    esac
+}
+
 conf_vm_param()
 {
     set_val "10" "$VM"/dirty_ratio
@@ -86,7 +139,7 @@ write_conf_file()
 
 # Wait until boot finish
 resetprop -w sys.boot_completed 0
-sleep 2
+sleep 3
 
 
 # Disable all swap partitions
@@ -126,5 +179,16 @@ change_task_nice "oom_reaper"
 # Start Filesystem Cache Control
 "$MEM_FEATURES_DIR"/fscc.sh
 
-# LMKD Minfree Levels, Thanks to helloklf @ GitHub
+# Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
+if [ "$MEM_TOTAL" -le 3145728 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
+elif [ "$MEM_TOTAL" -le 4194304 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
+elif [ "$MEM_TOTAL" -gt 4194304 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
+fi
 
+# Configuration file in /sdcard/Android/fog_mem_config.txt
+write_conf_file
+
+exit 0
