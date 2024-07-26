@@ -95,7 +95,7 @@ write_conf_file()
     clear_cfg
     write_cfg "Welcome Back"
     write_cfg ""
-    write_cfg "Redmi 10C Memory Management Optimization"
+    write_cfg "Redmi 10/10C/10 Power Memory Management Optimization"
     write_cfg "——————————————————————————————————"
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
     write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
@@ -123,7 +123,7 @@ write_conf_file()
     write_cfg "# Swapfile size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3"
     write_cfg "swapfile_sz=$swapfile_sz"
     write_cfg ""
-    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat $ZRAM_SYS/backing_dev)" != "none" ]; then
+    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
         write_cfg "# ZRAM Writeback app switch threshold, set the minimum number of app switch before performing small ZRAM Writeback. Default is 10 (Recommended 5 ~ 15)"
         write_cfg "app_switch_threshold=$app_switch_threshold"
         write_cfg ""
