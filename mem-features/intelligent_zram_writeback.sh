@@ -1,9 +1,10 @@
 #!/system/bin/sh
 # THANKS TO Dudu Ski, Xinlian, and Happy Little Sunshine123
+MODDIR=${0%/*}
 
-# load libraries
-CURR_DIR="$(dirname "$0")"
-. $CURR_DIR/PATHS.sh
+# Load libraries 
+MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
+. "$MEM_FEATURES_DIR"/paths.sh
 
 WRITEBACK_NUM=0
 apps=""
@@ -40,7 +41,6 @@ set_zram_writeback()
 # Activate ZRAM
 zram_on()
 {
-    set_val "1" $ZRAM_SYS/reset
     set_val "$3" $ZRAM_SYS/comp_algorithm
 
     set_zram_writeback
@@ -73,6 +73,16 @@ zram_get_comp_alg()
     echo "$str"
 }
 
+zram_avail_comp_alg()
+{
+    echo "$(cat $ZRAM_SYS/comp_algorithm | sed "s/\[//g" | sed "s/\]//g")"
+}
+
+zram_reset()
+{
+  set_val "1" "$ZRAM_SYS"/reset
+}
+
 zram_status()
 {
     local swap_info
@@ -86,14 +96,14 @@ zram_status()
 
 
 # Setup Automatic ZRAM Writeback after switching more than number of specified apps
-auto_zram_writeback()
+start_auto_zram_writeback()
 {
 
     # Default switch app threshold value
     app_switch_threshold="$(read_cfg app_switch_threshold)"
     [ "$app_switch_threshold" == "" ] && app_switch_threshold=10
 
-    if [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ] && [ "$(zram_writeback_support)" -eq 1 ]; then
+    if [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ] && [ "$(zram_wb_support)" -eq 1 ]; then
         while [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; do
             APP=$(dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}')
             mem_total=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
