@@ -26,23 +26,5 @@ resetprop -n ro.lmk.thrashing_limit_decay 50
 resetprop -p --delete persist.device_config.lmkd_native.thrashing_limit_critical
 resetprop -p --delete lmkd.reinit
 
-# LMKD Minfree Levels, Thanks to helloklf @ GitHub
-if [ "$MEM_TOTAL" -le 3145728 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
-elif [ "$MEM_TOTAL" -le 4194304 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
-elif [ "$MEM_TOTAL" -gt 4194304 ]; then
-  resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
-fi
-
-
-# I/O Optimization for UFS
-for queue in /sys/block/dm*/queue
-do
-  echo noop > $queue/scheduler
-done
-
-for queue in /sys/block/mmc*/queue
-do
-  echo 0 > $queue/read_ahead_kb
-done
+# Set higher CUR_MAX_CACHED_PROCESSES
+/system/bin/device_config put activity_manager max_cached_processes 128
