@@ -52,9 +52,11 @@ setup_hybrid_swap()
     enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
     [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
 
+    # Load size from config file
+    swapfile_sz="$(read_cfg swapfile_sz)"
+    [ "$swapfile_sz" == "" ] && swapfile_sz=0
+
     if [ "$enable_hybrid_swap" -eq 1 ]; then
-        # Load size from file
-        swapfile_sz="$(read_cfg swapfile_sz)"
         case "$swapfile_sz" in
             0|0.5|1|1.5|2|2.5|3) ;;
             *) swapfile_sz=2 ;;
