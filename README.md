@@ -1,5 +1,5 @@
 # Redmi 10C Memory Management Optimization
-Supports fog/wind/rain devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
+Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
  
 "Standing on the shoulders of giants"
 
