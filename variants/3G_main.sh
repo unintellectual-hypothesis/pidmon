@@ -100,7 +100,7 @@ write_conf_file()
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
     write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
     write_cfg "Last time module executed: $(date '+%Y-%m-%d %H:%M:%S')"
-    write_cfg "Version: v1.0"
+    write_cfg "Version: v1.1"
     write_cfg ""
     write_cfg "[ZRAM status]"
     write_cfg "$(zram_status)"
