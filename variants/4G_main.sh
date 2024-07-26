@@ -99,19 +99,28 @@ write_conf_file()
     write_cfg "# Available compression algorithm: $(zram_avail_comp_alg)"
     write_cfg "zram_algo=$zram_algo"
     write_cfg ""
-    write_cfg "# Hybrid Swap (System will use swapfile when ZRAM is exhausted). Enter 0 to disable hybrid swap or enter 1 to enable hybrid swap"
+    write_cfg "# Hybrid Swap. Enter 0 to disable hybrid swap or enter 1 to enable hybrid swap"
     write_cfg "enable_hybrid_swap=$enable_hybrid_swap"
     write_cfg ""
+    write_cfg "# Swapfile size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3"
+    write_cfg "swapfile_size=$swapfile_size"
+    write_cfg ""
     if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat $ZRAM_SYS/backing_dev)" != "none" ]; then
-        write_cfg "# ZRAM Writeback, set the minimum number of app switch before performing small ZRAM Writeback "
+        write_cfg "# ZRAM Writeback app switch threshold, set the minimum number of app switch before performing small ZRAM Writeback. Default is 10 (Recommended 5 ~ 15)"
         write_cfg "app_switch_threshold=$app_switch_threshold"
         write_cfg ""
+        write_cfg "# ZRAM Writeback rate. How many seconds before ZRAM activates writeback after switching apps. Default is 10 seconds (Recommended 5 ~ 20)"
+        write_cfg "zram_writeback_rate=$zram_writeback_rate"
+        write_cfg ""
     fi
-    write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 50 (Recommended value between 50 ~ 75)"
+    write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
     write_cfg "high_load_threshold=$high_load_threshold"
     write_cfg ""
-    write_cfg "# Dynamic Swappiness: Medium Load Threshold. Default value is 25 (Recommended value between 25 ~ 50)"
+    write_cfg "# Dynamic Swappiness: Medium Load Threshold. Default value is 30 (Recommended value between 25 ~ 50)"
     write_cfg "medium_load_threshold=$medium_load_threshold"
+    write_cfg ""
+    write_cfg "# Swappiness rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
+    write_cfg "swappiness_change_rate=$swappiness_change_rate"
 }
 
 # Wait until boot finish

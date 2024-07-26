@@ -26,7 +26,10 @@ conf_hybrid_swap()
     enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
     [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
     swapfile_size="$(read_cfg swapfile_size)"
-    [ "$swapfile_size" == "" ] && swapfile_size=0
+    case "$swapfile_size" in
+        0|0.5|1|1.5|2|2.5|3) ;;
+        *) swapfile_size=1 ;;
+    esac
 
     if [ "$enable_hybrid_swap" -eq 1 ]; then
         if [ -f "$SWAP_DIR"/swapfile ]; then
