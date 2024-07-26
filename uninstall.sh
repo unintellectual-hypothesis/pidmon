@@ -1,6 +1,7 @@
 #!/system/bin/sh
 
 # Remove swapfile
+rm -rf "$MODPATH"
 rm -rf "data/lswap/swapfile"
 
 # Wait until write is permissible on /sdcard
