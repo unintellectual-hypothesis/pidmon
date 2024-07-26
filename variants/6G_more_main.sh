@@ -193,7 +193,7 @@ fi
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
 
-sleep 180
+sleep 300
 # Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
 if [ "$MEM_TOTAL" -le 3145728 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
@@ -201,6 +201,13 @@ elif [ "$MEM_TOTAL" -le 4194304 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
 elif [ "$MEM_TOTAL" -gt 4194304 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
+fi
+
+# Set higher CUR_MAX_CACHED_PROCESSES
+if [ "$MEM_TOTAL" -gt 4194304 ]; then
+    /system/bin/device_config put activity_manager max_cached_processes 128
+else
+    /system/bin/device_config put activity_manager max_cached_processes 64
 fi
 
 exit 0

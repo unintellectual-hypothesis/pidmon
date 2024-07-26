@@ -1,6 +1,5 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
-MEM_TOTAL="$(awk '/^MemTotal:/{print $2}' /proc/meminfo)"
 
 # LMKD Optimization
 resetprop -n ro.lmk.use_new_strategy 1
@@ -21,10 +20,7 @@ resetprop -n ro.lmk.use_psi true
 resetprop -n ro.lmk.psi_partial_stall_ms 750
 resetprop -n ro.lmk.psi_complete_stall_ms 1400
 resetprop -n ro.lmk.swap_util_max 100
-resetprop -n ro.lmk.thrashing_limit 30
-resetprop -n ro.lmk.thrashing_limit_decay 50
+resetprop -n ro.lmk.thrashing_limit 100
+resetprop -n ro.lmk.thrashing_limit_decay 10
 resetprop -p --delete persist.device_config.lmkd_native.thrashing_limit_critical
 resetprop -p --delete lmkd.reinit
-
-# Set higher CUR_MAX_CACHED_PROCESSES
-/system/bin/device_config put activity_manager max_cached_processes 128

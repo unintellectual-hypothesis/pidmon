@@ -79,7 +79,7 @@ conf_vm_param()
     set_val "5" "$VM"/dirty_ratio
     set_val "3" "$VM"/dirty_background_ratio
     set_val "51200" "$VM"/extra_free_kbytes
-    set_val "8192" "$VM"/min_free_kbytes
+    set_val "6144" "$VM"/min_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "3500" "$VM"/dirty_writeback_centisecs
     
@@ -184,7 +184,7 @@ change_task_nice "oom_reaper"
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
 
-sleep 180
+sleep 300
 # Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
 if [ "$MEM_TOTAL" -le 3145728 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
@@ -192,6 +192,13 @@ elif [ "$MEM_TOTAL" -le 4194304 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
 elif [ "$MEM_TOTAL" -gt 4194304 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
+fi
+
+# Set higher CUR_MAX_CACHED_PROCESSES
+if [ "$MEM_TOTAL" -gt 4194304 ]; then
+    /system/bin/device_config put activity_manager max_cached_processes 128
+else
+    /system/bin/device_config put activity_manager max_cached_processes 64
 fi
 
 exit 0
