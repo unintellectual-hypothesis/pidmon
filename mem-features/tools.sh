@@ -53,11 +53,6 @@ swap_all_off()
     set_val "1" $ZRAM_SYS/reset
 }
 
-get_avail_comp_algo()
-{
-    echo "$(cat "$ZRAM_SYS"/comp_algorithm | sed "s/\[//g" | sed "s/\]//g")"
-}
-
 # Return:status
 fscc_status()
 {

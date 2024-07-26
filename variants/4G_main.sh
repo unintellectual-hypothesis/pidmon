@@ -17,9 +17,9 @@ zram_algo=""
 # Test if kernel supports swappiness over 100 (Some ROM defaults swappiness to 100)
 test_swappiness()
 {
-  set_val "160" $VM/swappiness
-  new_swappiness=$(cat $VM/swappiness)
-  if [ "$new_swappiness" -eq 160 ]; then
+  set_val "180" "$VM"/swappiness
+  new_swappiness=$(cat "$VM"/swappiness)
+  if [ "$new_swappiness" -eq 180 ]; then
     swap_over_hundy=1
   else
     swap_over_hundy=0
@@ -40,36 +40,6 @@ conf_vm_param()
 
     # Use multiple threads to run kswapd for better swapping performance
     set_val "8" "$VM"/kswapd_threads
-}
-
-conf_zram_param()
-{
-    # load size from file
-    zram_disksize="$(read_cfg zram_disksize)"
-    case "$zram_disksize" in
-        0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
-        *) zram_disksize=2.5 ;;
-    esac
-
-    # load algorithm from file, use lz0 as default
-    zram_algo="$(read_cfg zram_algo)"
-    [ "$zram_algo" == "" ] && zram_algo="lz0"
-
-    # ~2.8x compression ratio
-    # higher disksize result in larger space-inefficient SwapCache
-    case "$zram_disksize" in
-        0)  swap_all_off ;;
-        0.5)  zram_on 512M 160M "$zram_algo" ;;
-        1)  zram_on 1024M 360M "$zram_algo" ;;
-        1.5)  zram_on 1536M 540M "$zram_algo" ;;
-        2)  zram_on 2048M 720M "$zram_algo" ;;
-        2.5)  zram_on 2560M 900M "$zram_algo" ;;
-        3)  zram_on 3072M 1080M "$zram_algo" ;;
-        4)  zram_on 4096M 1440M "$zram_algo" ;;
-        5)  zram_on 5120M 1800M "$zram_algo" ;;
-        6)  zram_on 6144M 2160M "$zram_algo" ;;
-        8)  zram_on 8192M 2880M "$zram_algo" ;;
-    esac
 }
 
 write_conf_file()
@@ -96,14 +66,14 @@ write_conf_file()
     write_cfg "[Settings]"
     write_cfg "# ZRAM Available size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3 / 4 / 5 / 6 / 8"
     write_cfg "zram_disksize=$zram_disksize"
-    write_cfg "# Available compression algorithm: $(zram_avail_comp_alg)"
+    write_cfg "# Available compression algorithm: $(get_avail_comp_algo)"
     write_cfg "zram_algo=$zram_algo"
     write_cfg ""
     write_cfg "# Hybrid Swap. Enter 0 to disable hybrid swap or enter 1 to enable hybrid swap"
     write_cfg "enable_hybrid_swap=$enable_hybrid_swap"
     write_cfg ""
     write_cfg "# Swapfile size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3"
-    write_cfg "swapfile_size=$swapfile_size"
+    write_cfg "swapfile_sz=$swapfile_sz"
     write_cfg ""
     if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat $ZRAM_SYS/backing_dev)" != "none" ]; then
         write_cfg "# ZRAM Writeback app switch threshold, set the minimum number of app switch before performing small ZRAM Writeback. Default is 10 (Recommended 5 ~ 15)"

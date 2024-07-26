@@ -77,6 +77,11 @@ zram_get_comp_alg()
     echo "$str"
 }
 
+get_avail_comp_algo()
+{
+    echo "$(cat "$ZRAM_SYS"/comp_algorithm | sed "s/\[//g" | sed "s/\]//g")"
+}
+
 zram_reset()
 {
   set_val "1" "$ZRAM_SYS"/reset
@@ -93,6 +98,35 @@ zram_status()
     fi
 }
 
+conf_zram_param()
+{
+    # load size from file
+    zram_disksize="$(read_cfg zram_disksize)"
+    case "$zram_disksize" in
+        0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
+        *) zram_disksize=2.5 ;;
+    esac
+
+    # load algorithm from file, use lz0 as default
+    zram_algo="$(read_cfg zram_algo)"
+    [ "$zram_algo" == "" ] && zram_algo="lz0"
+
+    # ~2.8x compression ratio
+    # higher disksize result in larger space-inefficient SwapCache
+    case "$zram_disksize" in
+        0)  swap_all_off ;;
+        0.5)  zram_on 512M 160M "$zram_algo" ;;
+        1)  zram_on 1024M 360M "$zram_algo" ;;
+        1.5)  zram_on 1536M 540M "$zram_algo" ;;
+        2)  zram_on 2048M 720M "$zram_algo" ;;
+        2.5)  zram_on 2560M 900M "$zram_algo" ;;
+        3)  zram_on 3072M 1080M "$zram_algo" ;;
+        4)  zram_on 4096M 1440M "$zram_algo" ;;
+        5)  zram_on 5120M 1800M "$zram_algo" ;;
+        6)  zram_on 6144M 2160M "$zram_algo" ;;
+        8)  zram_on 8192M 2880M "$zram_algo" ;;
+    esac
+}
 
 # Setup Automatic ZRAM Writeback after switching more than number of specified apps
 start_auto_zram_writeback()
