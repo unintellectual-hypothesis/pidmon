@@ -23,7 +23,7 @@ conf_zram_param()
     zram_disksize="$(read_cfg zram_disksize)"
     case "$zram_disksize" in
         0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
-        *) zram_disksize=3 ;;
+        *) zram_disksize=4 ;;
     esac
 
     # load algorithm from file, use lz0 as default
@@ -192,5 +192,15 @@ fi
 
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
+
+sleep 180
+# Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
+if [ "$MEM_TOTAL" -le 3145728 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
+elif [ "$MEM_TOTAL" -le 4194304 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
+elif [ "$MEM_TOTAL" -gt 4194304 ]; then
+    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
+fi
 
 exit 0
