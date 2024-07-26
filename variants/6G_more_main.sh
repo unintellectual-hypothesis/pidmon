@@ -52,22 +52,24 @@ setup_hybrid_swap()
     enable_hybrid_swap="$(read_cfg enable_hybrid_swap)"
     [ "$enable_hybrid_swap" == "" ] && enable_hybrid_swap=0
 
-    # Load size from file
-    swapfile_sz="$(read_cfg swapfile_sz)"
-    case "$swapfile_sz" in
-        0|0.5|1|1.5|2|2.5|3) ;;
-        *) swapfile_sz=0.5 ;;
-    esac
+    if [ "$enable_hybrid_swap" -eq 1 ]; then
+        # Load size from file
+        swapfile_sz="$(read_cfg swapfile_sz)"
+        case "$swapfile_sz" in
+            0|0.5|1|1.5|2|2.5|3) ;;
+            *) swapfile_sz=2 ;;
+        esac
 
-    case "$swapfile_sz" in
-        0)  swap_all_off ;;
-        0.5)  swapfile_on 512 ;;
-        1)  swapfile_on 1024 ;;
-        1.5)  swapfile_on 1536 ;;
-        2)  swapfile_on 2048 ;;
-        2.5)  swapfile_on 2560 ;;
-        3)  swapfile_on 3072 ;;
-    esac
+        case "$swapfile_sz" in
+            0)  swap_all_off ;;
+            0.5)  swapfile_on 512 ;;
+            1)  swapfile_on 1024 ;;
+            1.5)  swapfile_on 1536 ;;
+            2)  swapfile_on 2048 ;;
+            2.5)  swapfile_on 2560 ;;
+            3)  swapfile_on 3072 ;;
+        esac
+    fi
 }
 
 conf_vm_param()
