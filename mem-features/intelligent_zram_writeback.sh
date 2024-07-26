@@ -44,7 +44,7 @@ zram_on()
 {
     set_val "$3" "$ZRAM_SYS"/comp_algorithm
 
-    if [ "$(zram_wb_support)" -eq 1 ]; then
+    if [ "$(zram_wb_support)" -eq 1 ] && [ -f "/data/extm/extm_file" ]; then
         set_zram_writeback
     fi
 
