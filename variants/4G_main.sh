@@ -143,7 +143,7 @@ write_conf_file()
 
 # Wait until boot finish
 resetprop -w sys.boot_completed 0
-sleep 2
+sleep 2.5
 
 # Disable all swap partitions
 swap_all_off
