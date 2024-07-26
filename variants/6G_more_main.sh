@@ -23,7 +23,7 @@ conf_zram_param()
     zram_disksize="$(read_cfg zram_disksize)"
     case "$zram_disksize" in
         0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
-        *) zram_disksize=2 ;;
+        *) zram_disksize=3 ;;
     esac
 
     # load algorithm from file, use lz0 as default
@@ -77,11 +77,11 @@ setup_hybrid_swap()
 conf_vm_param()
 {
     set_val "15" "$VM"/dirty_ratio
-    set_val "5" "$VM"/dirty_background_ratio
+    set_val "10" "$VM"/dirty_background_ratio
     set_val "102400" "$VM"/extra_free_kbytes
-    set_val "8192" "$VM"/min_free_kbytes
+    set_val "12288" "$VM"/min_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
-    set_val "3500" "$VM"/dirty_writeback_centisecs
+    set_val "5000" "$VM"/dirty_writeback_centisecs
     
     # Don't need to set watermark_scale_factor since we already have vm.extra_free_kbytes. See /proc/zoneinfo for more info
     set_val "1" "$VM"/watermark_scale_factor
@@ -95,7 +95,7 @@ write_conf_file()
     clear_cfg
     write_cfg "Welcome Back"
     write_cfg ""
-    write_cfg "Redmi 10C Memory Management Optimization"
+    write_cfg "Redmi 10/10C/10 Power Memory Management Optimization"
     write_cfg "——————————————————————————————————"
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
     write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
@@ -123,7 +123,7 @@ write_conf_file()
     write_cfg "# Swapfile size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3"
     write_cfg "swapfile_sz=$swapfile_sz"
     write_cfg ""
-    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat $ZRAM_SYS/backing_dev)" != "none" ]; then
+    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
         write_cfg "# ZRAM Writeback app switch threshold, set the minimum number of app switch before performing small ZRAM Writeback. Default is 10 (Recommended 5 ~ 15)"
         write_cfg "app_switch_threshold=$app_switch_threshold"
         write_cfg ""
