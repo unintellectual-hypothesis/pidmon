@@ -2,9 +2,12 @@
 # Thanks to Draco (tytydraco @ GitHub) and Matt Yang (yc9559 @ CoolApk)
 # If you wanna use the code as part of your project, please maintain the credits to it's respectives authors
 # THANKS TO pedrozzz0 @ GitHub
+MODDIR=${0%/*}
 
-# For debug purposes
-[[ "$1" == "--debug" ]] || [[ "$1" == "-d" ]] && set -x
+# Load libraries 
+MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
+. "$MEM_FEATURES_DIR"/paths.sh
+
 
 #####################
 # Variables
@@ -47,9 +50,6 @@ log_e() {
 	echo "[!] $1" >"$fscc_log"
 	echo "[!] $1"
 }
-
-notif_start() { su -lp 2000 -c "cmd notification post -S bigtext -t 'FSCC is executing' tag 'FSCC is running...'" >/dev/null 2>&1; }
-notif_end() { su -lp 2000 -c "cmd notification post -S bigtext -t 'FSCC is executing' tag 'FSCC pinned libs successfully!'" >/dev/null 2>&1; }
 
 [[ "$(command -v busybox)" ]] && {
 	total_ram=$(busybox free -m | awk '/Mem:/{print $2}')
@@ -132,28 +132,10 @@ fscc_add_app_ime() {
 # $1:file
 fscc_add_apex_lib() { fscc_add_obj "$(find /apex -name "$1" | head -1)"; }
 
-fscc_status()
-{
-    # get the correct value after waiting for fscc loading files
-    sleep 2
-    if [ "$(ps -A | grep fscache-ctrl)" != "" ]; then
-        echo "Running. $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache."
-    else
-        echo "Not running."
-    fi
-}
-
 # After appending fscc_file_list
 # Multiple parameters, cannot be warped by ""
-fscc_start() { ${MODPATH}bin/fscache-ctrl -fdlb0 $fscc_file_list; }
+fscc_start() { "$MODULE_PATH"/system/bin/fscache-ctrl -fdlb0 $fscc_file_list; }
 fscc_stop() { killall -9 fscache-ctrl; }
-
-# Return:status
-fscc_status() {
-	# Get the correct value after waiting for fscc loading files
-	sleep 2
-	[[ "$(pgrep -f "fscache-ctrl")" ]] && echo "Running $(cat /proc/meminfo | grep Mlocked | cut -d: -f2 | tr -d ' ') in cache." || echo "Not running."
-}
 
 # System binaries (services)
 fscc_add_obj "$sys_bin/surfaceflinger"

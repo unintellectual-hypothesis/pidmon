@@ -1,4 +1,5 @@
 #!/system/bin/sh
+MODDIR=${0%/*}
 
 CFG_FILE="/sdcard/Android/fog_mem_config.txt"
 VM="/proc/sys/vm"

@@ -1,5 +1,10 @@
 #!/system/bin/sh
 # THANKS TO yc9559 @ GitHub
+MODDIR=${0%/*}
+
+# Load libraries 
+MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
+. "$MEM_FEATURES_DIR"/paths.sh
 
 # Change CPU affinity for kswapd and oom_reaper
 change_task_affinity()

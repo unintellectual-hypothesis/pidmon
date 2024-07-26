@@ -28,24 +28,24 @@ test_swappiness()
 start_dynamic_swappiness()
 {
     high_load_threshold="$(read_cfg high_load_threshold)"
-    [ "$high_load_threshold" == "" ] && high_load_threshold=50
+    [ "$high_load_threshold" == "" ] && high_load_threshold=65
     medium_load_threshold="$(read_cfg medium_load_threshold)"
-    [ "$medium_load_threshold" == "" ] && medium_load_threshold=25
+    [ "$medium_load_threshold" == "" ] && medium_load_threshold=30
     swappiness_change_rate="$(read_cfg swappiness_change_rate)"
     [ "$swappiness_change_rate" == "" ] && swappiness_change_rate=15
 
     while [ "$(awk '/^SwapTotal:/{print $2}' /proc/meminfo)" != 0 ]; do
     load_avg=$(awk  '{printf "%.0f", ($1 * 100 / 8)}'  /proc/loadavg)
-        if [ "$load_avg" -ge "$(read_cfg high_load_threshold)" ]; then
+        if [ "$load_avg" -ge "$high_load_threshold" ]; then
             resetprop -n ro.lmk.use_minfree_levels false
             if [ "$swap_over_hundy" -eq 1 ]; then
                 set_val "100" "$VM"/swappiness
                 set_val "175" "$VM"/vfs_cache_pressure
             elif [ "$swap_over_hundy" -eq 0 ]; then
-                set_val "90" "$VM"/swappiness
+                set_val "85" "$VM"/swappiness
                 set_val "175" "$VM"/vfs_cache_pressure
             fi
-        elif [ "$load_avg" -ge "$(read_cfg medium_load_threshold)" ]; then
+        elif [ "$load_avg" -ge "$medium_load_threshold" ]; then
             resetprop -n ro.lmk.use_minfree_levels true
             if [ "$swap_over_hundy" -eq 1 ]; then
                 set_val "165" "$VM"/swappiness
@@ -64,6 +64,6 @@ start_dynamic_swappiness()
                 set_val "110" "$VM"/vfs_cache_pressure
             fi
         fi
-    sleep "$(read_cfg swappiness_change_rate)"
+    sleep "$swappiness_change_rate"
   done &
 }

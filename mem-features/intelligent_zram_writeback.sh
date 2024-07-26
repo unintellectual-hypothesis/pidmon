@@ -6,15 +6,16 @@ MODDIR=${0%/*}
 MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEATURES_DIR"/paths.sh
 
-WRITEBACK_NUM=0
-apps=""
-app_switch=0
+WRITEBACK_NUM=""
+CURRENT_APP=""
+app_switch=""
 app_switch_threshold=""
+zram_writeback_rate=""
 
 # Checks ZRAM Writeback Support
 zram_wb_support()
 {
-    if [ -f $ZRAM_SYS/writeback ] && [ -f $ZRAM_SYS/backing_dev ] && [ -f $ZRAM_SYS/idle ]; then
+    if [ -f "$ZRAM_SYS"/writeback ] && [ -f "$ZRAM_SYS"/backing_dev ] && [ -f "$ZRAM_SYS"/idle ]; then
         echo "1"
     else
         echo "0"
@@ -29,8 +30,8 @@ set_zram_writeback()
         loop_num=$(echo "$loop_device" | grep -Eo '[0-9]{1,2}')
         losetup $loop_device /data/extm/extm_file
 
-        set_val "$loop_device" $ZRAM_SYS/backing_dev
-        set_val "0" $ZRAM_SYS/writeback_limit_enable
+        set_val "$loop_device" "$ZRAM_SYS"/backing_dev
+        set_val "0" "$ZRAM_SYS"/writeback_limit_enable
 
         # Use "none" as the ZRAM Backing Dev scheduler and turn off iostats to reduce overhead
         set_val none > /sys/block/loop"$loop_num"/queue/scheduler
@@ -41,27 +42,30 @@ set_zram_writeback()
 # Activate ZRAM
 zram_on()
 {
-    set_val "$3" $ZRAM_SYS/comp_algorithm
+    set_val "$3" "$ZRAM_SYS"/comp_algorithm
 
-    set_zram_writeback
+    if [ "$(zram_wb_support)" -eq 1 ]; then
+        set_zram_writeback
+    fi
 
-    set_val "$1" $ZRAM_SYS/disksize
-    set_val "$2" $ZRAM_SYS/mem_limit
-    toybox mkswap $ZRAM_DEV
-    toybox swapon $ZRAM_DEV -p 2024
+    set_val "$1" "$ZRAM_SYS"/disksize
+    set_val "$2" "$ZRAM_SYS"/mem_limit
+    toybox mkswap "$ZRAM_DEV"
+    toybox swapon "$ZRAM_DEV" -p 2024
 
-    if [ "$(cat $ZRAM_SYS/backing_dev)" != "none" ]; then
+    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
         set_val "3" $VM/page-cluster
     else
         set_val "0" $VM/page-cluster
     fi
 
     # Disable ZRAM readahead
-    set_val "0" $ZRAM_SYS/read_ahead_kb
+    set_val "0" "$ZRAM_SYS"/read_ahead_kb
 
-    set_val 1 $ZRAM_SYS/use_dedup
+    # Use memory deduplication for ZRAM
+    set_val 1 "$ZRAM_SYS"/use_dedup
 
-    if [ "$enable_hybrid_swap" -eq 0 ]; then
+    if [ "$(read_cfg enable_hybrid_swap)" -eq 0 ]; then
         set_val "false" /sys/kernel/mm/swap/vma_ra_enabled
     fi
 }
@@ -69,13 +73,8 @@ zram_on()
 zram_get_comp_alg()
 {
     local str
-    str="$(cat $ZRAM_SYS/comp_algorithm)"
+    str="$(cat "$ZRAM_SYS"/comp_algorithm)"
     echo "$str"
-}
-
-zram_avail_comp_alg()
-{
-    echo "$(cat $ZRAM_SYS/comp_algorithm | sed "s/\[//g" | sed "s/\]//g")"
 }
 
 zram_reset()
@@ -102,10 +101,12 @@ start_auto_zram_writeback()
     # Default switch app threshold value
     app_switch_threshold="$(read_cfg app_switch_threshold)"
     [ "$app_switch_threshold" == "" ] && app_switch_threshold=10
+    zram_writeback_rate="$(read_cfg zram_writeback_rate)"
+    [ "$zram_writeback_rate" == "" ] && zram_writeback_rate=10
 
     if [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ] && [ "$(zram_wb_support)" -eq 1 ]; then
         while [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; do
-            APP=$(dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}')
+            PREV_APP=$(dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}')
             mem_total=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
             mem_avail=$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)
             min_mem_avail=$(awk '/^MemTotal:/{print int($2/5)}' /proc/meminfo)
@@ -114,15 +115,15 @@ start_auto_zram_writeback()
             if [ "$mem_avail" -le "$min_mem_avail" ]; then
                 display_state=$(dumpsys display | awk -F "=" '/mScreenState/ {print $2}')
                 if [ "$display_state" == "OFF" ]; then
-                    set_val all $ZRAM_SYS/idle
-                    set_val idle $ZRAM_SYS/writeback
+                    set_val all "$ZRAM_SYS"/idle
+                    set_val idle "$ZRAM_SYS"/writeback
                     app_switch=0
                 fi
             fi
   
             # Checks app switching, ignore when screen is off
-            if [ "$APP" != "$apps" ]; then
-                if [ -z "$APP" ]; then
+            if [ "$PREV_APP" != "$CURRENT_APP" ]; then
+                if [ -z "$PREV_APP" ]; then
                     app_switch=$((app_switch + 0))
                 else
                     app_switch=$((app_switch + 1))
@@ -136,21 +137,21 @@ start_auto_zram_writeback()
                     WRITEBACK_NUM=0
                 fi
                 if [ "$WRITEBACK_NUM" -eq 4 ] && [ "$display_state" == "OFF" ]; then
-                    set_val all $ZRAM_SYS/idle
-                    set_val idle $ZRAM_SYS/writeback
+                    set_val all "$ZRAM_SYS"/idle
+                    set_val idle "$ZRAM_SYS"/writeback
                     WRITEBACK_NUM=$((WRITEBACK_NUM + 1))
                     app_switch=0
                 else
                     if [ "$WRITEBACK_NUM" -lt 4 ]; then
-                        set_val huge $ZRAM_SYS/writeback 
+                        set_val huge "$ZRAM_SYS"/writeback 
                         WRITEBACK_NUM=$((WRITEBACK_NUM + 1))
                         app_switch=0
                     fi
                 fi
             fi
   
-        apps="$APP"
-        sleep 10
+        CURRENT_APP="$PREV_APP"
+        sleep "$zram_writeback_rate"
   
     done &
 fi
