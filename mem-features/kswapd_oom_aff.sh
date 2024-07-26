@@ -17,6 +17,7 @@ change_task_affinity()
     done
 }
 
+# Add the argument "-n"
 change_task_nice()
 {
     local ps_right
