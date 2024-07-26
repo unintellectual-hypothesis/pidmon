@@ -2,7 +2,7 @@
 
 # Remove swapfile
 rm -rf "$MODPATH"
-rm -rf "data/lswap/swapfile"
+rm -rf "data/lswap"
 
 # Wait until write is permissible on /sdcard
 while [ ! -d "/sdcard/Android" ]; do
