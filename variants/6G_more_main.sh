@@ -178,7 +178,7 @@ change_task_nice "kswapd"
 change_task_nice "oom_reaper"
 
 # Start Filesystem Cache Control
-"$MEM_FEATURES_DIR"/fscc.sh
+"$MODULE_PATH"/system/bin/fscc
 
 # Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
 if [ "$MEM_TOTAL" -le 3145728 ]; then
