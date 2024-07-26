@@ -1,5 +1,5 @@
-#  Fog Memory Management Optimization
-Supports Redmi 10/10C/10 Power for 3GB/4GB/6GB and more variants (it may work well on other devices)
+#  Redmi 10/10C/10 Power Memory Management Optimization
+Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
  
 "Standing on the shoulders of giants"
 
