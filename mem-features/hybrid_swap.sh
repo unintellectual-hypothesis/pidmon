@@ -38,6 +38,12 @@ swapfile_on()
         set_val "1" "$PPR"/enable_process_reclaim
         set_val "90" "$PPR"/pressure_max
         set_val "70" "$PPR"/pressure_min
-        set_val "256" "$PPR"/per_swap_size
+        if [ "$MEM_TOTAL" -le 3145728 ]; then
+            set_val "128" "$PPR"/per_swap_size
+        elif [ "$MEM_TOTAL" -le 4197304 ]; then
+            set_val "256" "$PPR"/per_swap_size
+        elif [ "$MEM_TOTAL" -gt 4197304 ]; then
+            set_val "512" "$PPR"/per_swap_size
+        fi
     fi
 }
