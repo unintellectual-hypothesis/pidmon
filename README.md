@@ -31,7 +31,33 @@ Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on othe
 Q: I want to change my ZRAM size, how can I do that?
  
 A: You can change the ZRAM size on the configuration file located in /sdcard/Android/fog_mem_config.txt
-   
-   
-Q: Can I just use swapfile and turn off my ZRAM?
-A: You can but it is NOT recommended 
+
+<br>
+
+Q: Can I just use swapfile and turn off my ZRAM? If so, how can I do it?
+ 
+A: You can, but it is NOT recommended due to wear-out problems. Turn on Hybrid Swap and set ZRAM size to 0. You may change your swapfile size as well at maximum 3GB.
+
+<br>
+
+Q: What does "High Load Threshold" and "Medium Load Threshold" mean?
+
+A: High and Medium Load Threshold are the threshold wherein if the CPU & I/O is greater than the initialized number, it will change swappiness based on the load.
+
+## 질의응답
+
+Q: ZRAM 크기를 변경하고 싶은데 어떻게 하나요?
+ 
+A: /sdcard/Android/fog_mem_config.txt>에 있는 구성 파일에서 ZRAM 크기를 변경할 수 있습니다.
+
+<br>
+
+Q: 스왑파일만 사용하고 ZRAM을 끌 수 있나요? 그렇다면 어떻게 해야 하나요?
+ 
+A: 가능하지만 마모 문제로 인해 권장되지 않습니다. 하이브리드 스왑을 켜고 ZRAM 크기를 0으로 설정하세요. 스왑파일 크기도 최대 3GB까지 변경할 수 있습니다.
+
+<br>
+
+Q: “높은 부하 임계값”과 “중간 부하 임계값”은 무엇을 의미하나요?
+
+A: 높은 부하 임계값과 중간 부하 임계값은 CPU 및 I/O가 초기화된 수치보다 클 경우 부하에 따라 스왑을 변경하는 임계값입니다.
