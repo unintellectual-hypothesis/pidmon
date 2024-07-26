@@ -53,7 +53,7 @@ zram_on()
     toybox mkswap "$ZRAM_DEV"
     toybox swapon "$ZRAM_DEV" -p 2024
 
-    if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
+    if [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
         set_val "3" $VM/page-cluster
     else
         set_val "0" $VM/page-cluster
