@@ -48,7 +48,7 @@ A: High and Medium Load Threshold are the threshold wherein if the CPU & I/O is 
 
 Q: ZRAM 크기를 변경하고 싶은데 어떻게 하나요?
  
-A: /sdcard/Android/fog_mem_config.txt>에 있는 구성 파일에서 ZRAM 크기를 변경할 수 있습니다.
+A: /sdcard/Android/fog_mem_config.txt에 있는 구성 파일에서 ZRAM 크기를 변경할 수 있습니다.
 
 <br>
 
