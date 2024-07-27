@@ -61,3 +61,14 @@ A: 가능하지만 마모 문제로 인해 권장되지 않습니다. 하이브�
 Q: “높은 부하 임계값”과 “중간 부하 임계값”은 무엇을 의미하나요?
 
 A: 높은 부하 임계값과 중간 부하 임계값은 CPU 및 I/O가 초기화된 수치보다 클 경우 부하에 따라 스왑을 변경하는 임계값입니다.
+
+## Installation
+Download the latest release and flash the file on Magisk/KernelSU. Configuration file in /sdcard/Android/fog_mem_config.txt
+
+## REFERENCES
+* [ZRAM Performance Tuning](https://juejin.cn/post/7147284908367413261)
+* [ZRAM Intelligent Writeback](https://developer.aliyun.com/article/1230689)
+* [Hybrid Swapping based on Per-Process Reclaim](https://ieeexplore.ieee.org/document/8478216)
+* [Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg](https://github.com/VR-25/zram-swap-manager)
+* [KSWAPD and OOM Reaper affinity to save power](https://github.com/yc9559/qti-mem-opt)
+* [ZRAM Disksize based on RAM variants](https://dumps.tadiphone.dev/dumps/oneplus/op5566l1/-/blob/sys_mssi_64_cn_armv82-user-13-TP1A.220905.001-1685974352305-release-keys--IN/vendor/bin/swap_enable.sh)
