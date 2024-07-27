@@ -30,7 +30,7 @@ Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on othe
 ## Installation
 Download the latest release and flash the file on Magisk/KernelSU. Configuration file in /sdcard/Android/fog_mem_config.txt
 
-## REFERENCES
+## References
 * [ZRAM Performance Tuning](https://juejin.cn/post/7147284908367413261)
 * [ZRAM Intelligent Writeback](https://developer.aliyun.com/article/1230689)
 * [Hybrid Swapping based on Per-Process Reclaim](https://ieeexplore.ieee.org/document/8478216)
