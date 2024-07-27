@@ -37,7 +37,7 @@ Download the latest release and flash the file on Magisk/KernelSU. Configuration
 * [Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg](https://github.com/VR-25/zram-swap-manager)
 * [KSWAPD and OOM Reaper affinity to save power](https://github.com/yc9559/qti-mem-opt)
 * [ZRAM Disksize based on RAM variants](https://dumps.tadiphone.dev/dumps/oneplus/op5566l1/-/blob/sys_mssi_64_cn_armv82-user-13-TP1A.220905.001-1685974352305-release-keys--IN/vendor/bin/swap_enable.sh)
-* [Adjusts LMKD and Swappiness value to reduce chances of background apps killed](https://blog.51cto.com/u_16213570/9370516)
+* [Adjusts userspace LMKD and Swappiness value to reduce chances of background apps killed](https://blog.51cto.com/u_16213570/9370516)
 
 ## Credits
 @yc9559 
