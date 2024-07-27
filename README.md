@@ -51,3 +51,5 @@ Download the latest release and flash the file on Magisk/KernelSU. Configuration
 @agnostic-apollo 
  
 @pedrozzz0 
+
+And others I might haven't mentioned.
