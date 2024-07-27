@@ -14,9 +14,9 @@ swap_over_hundy=""
 # Test if system supports swappiness over 100 (Some ROM defaults swappiness to 100)
 test_swappiness()
 {
-    set_val "160" "$VM"/swappiness
+    set_val "165" "$VM"/swappiness
     new_swappiness="$(cat "$VM"/swappiness)"
-    if [ "$new_swappiness" -eq 180 ]; then
+    if [ "$new_swappiness" -eq 165 ]; then
         swap_over_hundy=1
     else
         swap_over_hundy=0

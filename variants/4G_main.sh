@@ -10,6 +10,7 @@ MODULE_PATH="${MODULE_PATH%/variants}"
 # load libraries
 MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEATURES_DIR"/tools.sh
+. "$MEM_FEATURES_DIR"/conf_mi_reclaim.sh
 . "$MEM_FEATURES_DIR"/dynamic_swappiness.sh
 . "$MEM_FEATURES_DIR"/hybrid_swap.sh
 . "$MEM_FEATURES_DIR"/intelligent_zram_writeback.sh
@@ -94,10 +95,10 @@ conf_vm_param()
     
     # Set higher swappiness for ZRAM
     if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
-        set_val "160" "$VM"/swappiness
-        set_val "160" /dev/memcg/memory.swappiness
-        set_val "160" /dev/memcg/apps/memory.swappiness
-        set_val "160" /dev/memcg/system/memory.swappiness
+        set_val "165" "$VM"/swappiness
+        set_val "165" /dev/memcg/memory.swappiness
+        set_val "165" /dev/memcg/apps/memory.swappiness
+        set_val "165" /dev/memcg/system/memory.swappiness
     else
         set_val "100" "$VM"/swappiness
         set_val "100" /dev/memcg/memory.swappiness
@@ -139,19 +140,19 @@ write_conf_file()
     write_cfg ""
     write_cfg "# Swapfile size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3"
     write_cfg "swapfile_sz=$swapfile_sz"
-    write_cfg ""
     if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
+        write_cfg ""
         write_cfg "# ZRAM Writeback app switch threshold, set the minimum number of app switch before performing small ZRAM Writeback. Default is 10 (Recommended 5 ~ 15)"
         write_cfg "app_switch_threshold=$app_switch_threshold"
         write_cfg ""
         write_cfg "# ZRAM Writeback rate. How many seconds before ZRAM activates writeback after switching apps. Default is 10 seconds (Recommended 5 ~ 20)"
         write_cfg "zram_writeback_rate=$zram_writeback_rate"
-        write_cfg ""
     fi
+    write_cfg ""
     write_cfg "# Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg"
     write_cfg "enable_dynamic_swappiness=$enable_dynamic_swappiness"
-    write_cfg ""
     if [ "$(read_cfg enable_dynamic_swappiness)" == "1" ]; then
+        write_cfg ""
         write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
         write_cfg "high_load_threshold=$high_load_threshold"
         write_cfg ""
@@ -161,7 +162,8 @@ write_conf_file()
         write_cfg "# Dynamic Swappiness rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
         write_cfg "swappiness_change_rate=$swappiness_change_rate"
     fi
-    if [ -f "/sys/kernel/mi_reclaim" ] || [ -f "/d/rtmm" ] || [ -f "/sys/kernel/mm/rtmm" ]; then
+    if [ -d "/sys/kernel/mi_reclaim" ] || [ -d "/d/rtmm" ] || [ -d "/sys/kernel/mm/rtmm" ]; then
+        write_cfg ""
         write_cfg "# Mi reclaim. Set value to 0 to turn off and 1 to turn on"
         write_cfg "mi_reclaim=$mi_reclaim"
     fi
