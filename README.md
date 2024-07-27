@@ -40,9 +40,14 @@ Download the latest release and flash the file on Magisk/KernelSU. Configuration
 * [Adjusts LMKD and Swappiness value to reduce chances of background apps killed](https://blog.51cto.com/u_16213570/9370516)
 
 ## Credits
-@yc9559
-@crok
-@helloklf
-@VR-25
-@agnostic-apollo
-@pedrozzz0
+@yc9559 
+ 
+@crok 
+ 
+@helloklf 
+ 
+@VR-25 
+ 
+@agnostic-apollo 
+ 
+@pedrozzz0 
