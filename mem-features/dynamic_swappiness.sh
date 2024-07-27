@@ -14,7 +14,7 @@ swap_over_hundy=""
 # Test if system supports swappiness over 100 (Some ROM defaults swappiness to 100)
 test_swappiness()
 {
-    set_val "180" "$VM"/swappiness
+    set_val "160" "$VM"/swappiness
     new_swappiness="$(cat "$VM"/swappiness)"
     if [ "$new_swappiness" -eq 180 ]; then
         swap_over_hundy=1
@@ -38,7 +38,7 @@ start_dynamic_swappiness()
         if [ "$load_avg" -ge "$high_load_threshold" ]; then
             resetprop -n ro.lmk.use_minfree_levels false
             if [ "$swap_over_hundy" -eq 1 ]; then
-                set_val "100" "$VM"/swappiness
+                set_val "120" "$VM"/swappiness
                 set_val "175" "$VM"/vfs_cache_pressure
             elif [ "$swap_over_hundy" -eq 0 ]; then
                 set_val "85" "$VM"/swappiness
@@ -47,7 +47,7 @@ start_dynamic_swappiness()
         elif [ "$load_avg" -ge "$medium_load_threshold" ]; then
             resetprop -n ro.lmk.use_minfree_levels true
             if [ "$swap_over_hundy" -eq 1 ]; then
-                set_val "165" "$VM"/swappiness
+                set_val "150" "$VM"/swappiness
                 set_val "140" "$VM"/vfs_cache_pressure
             elif [ "$swap_over_hundy" -eq 0 ]; then
                 set_val "95" "$VM"/swappiness
@@ -56,7 +56,7 @@ start_dynamic_swappiness()
         elif [ "$load_avg" -ge 0 ]; then
             resetprop -n ro.lmk.use_minfree_levels true
             if [ "$swap_over_hundy" -eq 1 ]; then
-                set_val "180" "$VM"/swappiness
+                set_val "165" "$VM"/swappiness
                 set_val "110" "$VM"/vfs_cache_pressure
             elif [ "$swap_over_hundy" -eq 0 ]; then
                 set_val "100" "$VM"/swappiness

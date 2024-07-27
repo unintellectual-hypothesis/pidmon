@@ -7,6 +7,7 @@ MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 
 enable_hybrid_swap=""
 swapfile_sz=""
+prev_swapfile_sz=""
 PPR="/sys/module/process_reclaim/parameters"
 
 swapfile_status()
@@ -24,7 +25,9 @@ swapfile_status()
 
 swapfile_on()
 {
-    if [ -f "$SWAP_DIR"/swapfile ]; then
+    swapfile_sz="$(read_cfg swapfile_sz)"
+    prev_swapfile_sz="$(ls -l "$SWAP_DIR"/swapfile)"
+    if [ -f "$SWAP_DIR"/swapfile ] && [ "$prev_swapfile_sz" == "$(gb_to_bytes "$swapfile_sz")" ]; then
         toybox swapon -d "$SWAP_DIR"/swapfile -p 1111
     else
         mkdir "$SWAP_DIR"
@@ -45,5 +48,7 @@ swapfile_on()
         elif [ "$MEM_TOTAL" -gt 4197304 ]; then
             set_val "512" "$PPR"/per_swap_size
         fi
+    else
+        set_val "0" "$PPR"/enable_process_reclaim
     fi
 }

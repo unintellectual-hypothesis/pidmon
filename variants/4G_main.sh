@@ -27,9 +27,9 @@ conf_zram_param()
         *) zram_disksize=2.5 ;;
     esac
 
-    # load algorithm from file, use lz0 as default
+    # load algorithm from file, use lz4 as default
     zram_algo="$(read_cfg zram_algo)"
-    [ "$zram_algo" == "" ] && zram_algo="lz0"
+    [ "$zram_algo" == "" ] && zram_algo="lz4"
 
     # ~2.8x compression ratio
     # higher disksize result in larger space-inefficient SwapCache
@@ -80,9 +80,8 @@ conf_vm_param()
     set_val "10" "$VM"/dirty_ratio
     set_val "5" "$VM"/dirty_background_ratio
     set_val "76800" "$VM"/extra_free_kbytes
-    set_val "8192" "$VM"/min_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
-    set_val "4000" "$VM"/dirty_writeback_centisecs
+    set_val "4500" "$VM"/dirty_writeback_centisecs
     
     # Don't need to set watermark_scale_factor since we already have vm.extra_free_kbytes. See /proc/zoneinfo for more info
     set_val "1" "$VM"/watermark_scale_factor
@@ -94,10 +93,17 @@ conf_vm_param()
     set_val "100" "$VM"/vfs_cache_pressure
     
     # Set higher swappiness for ZRAM
-    set_val "180" "$VM"/swappiness
-    set_val "180" /dev/memcg/memory.swappiness
-    set_val "180" /dev/memcg/apps/memory.swappiness
-    set_val "180" /dev/memcg/system/memory.swappiness
+    if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
+        set_val "160" "$VM"/swappiness
+        set_val "160" /dev/memcg/memory.swappiness
+        set_val "160" /dev/memcg/apps/memory.swappiness
+        set_val "160" /dev/memcg/system/memory.swappiness
+    else
+        set_val "100" "$VM"/swappiness
+        set_val "100" /dev/memcg/memory.swappiness
+        set_val "100" /dev/memcg/apps/memory.swappiness
+        set_val "100" /dev/memcg/system/memory.swappiness
+    fi
 }
 
 write_conf_file()
@@ -142,7 +148,7 @@ write_conf_file()
         write_cfg "zram_writeback_rate=$zram_writeback_rate"
         write_cfg ""
     fi
-    write_cfg "# Enable Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg"
+    write_cfg "# Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg"
     write_cfg "enable_dynamic_swappiness=$enable_dynamic_swappiness"
     write_cfg ""
     if [ "$(read_cfg enable_dynamic_swappiness)" == "1" ]; then
@@ -154,7 +160,11 @@ write_conf_file()
         write_cfg ""
         write_cfg "# Dynamic Swappiness rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
         write_cfg "swappiness_change_rate=$swappiness_change_rate"
-    fi    
+    fi
+    if [ -f "/sys/kernel/mi_reclaim" ] || [ -f "/d/rtmm" ] || [ -f "/sys/kernel/mm/rtmm" ]; then
+        write_cfg "# Mi reclaim. Set value to 0 to turn off and 1 to turn on"
+        write_cfg "mi_reclaim=$mi_reclaim"
+    fi
 }
 
 # Disable all swap partitions
@@ -199,7 +209,7 @@ change_task_nice "oom_reaper"
 "$MODULE_PATH"/system/bin/fscc
 
 # Configure mi_reclaim
-set_val "0" /sys/kernel/mi_reclaim/enable
+conf_mi_reclaim
 
 # Configure virtual machine parameters
 conf_vm_param
@@ -207,8 +217,9 @@ conf_vm_param
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
 
-nohup "$MODULE_PATH"/system/bin/set_swappiness >/dev/null 2>&1 &
+nohup "$MODULE_PATH"/system/bin/set_swappiness > /dev/null 2>&1 &
 
+# Wait a little longer to avoid collisions
 sleep 60
 
 # Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub

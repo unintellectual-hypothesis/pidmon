@@ -145,10 +145,12 @@ fscc_add_apex_lib "dex2oat"
 fscc_add_apk "com.android.systemui"
 fscc_add_dex "com.android.systemui"
 
-# Pin input method and camera libs only if we really have enough RAM for it
+# Pin input method and home launcher libs only if we really have enough RAM for it
 [[ "$total_ram" -ge "4096" ]] && {
 	fscc_add_app_ime
-	fscc_add_obj "$vdr_lib/libcamxexternalformatutils.so"
-	fscc_add_obj "$vdr_lib/libipebpsstriping.so"
-	fscc_add_obj "$vdr_lib/libipebpsstriping170.so"
+	fscc_add_app_home
 }
+
+# Pin Start (MLocked)
+fscc_stop
+fscc_start

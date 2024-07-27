@@ -38,6 +38,10 @@ read_cfg()
 wait_until_unlock()
 {
   while [ ! -d "/sdcard/Android" ]; do
+    # Turn off swap partitions
+    swap_all_off
+    zram_reset
+    
     sleep 1
   done
 }

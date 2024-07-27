@@ -1,6 +1,7 @@
 #!/system/bin/sh
 # Constructed by: free @ Telegram // unintellectual-hypothesis @GitHub
 MODDIR=${0%/*}
+MEM_TOTAL="$(awk '/^MemTotal:/{print $2}' /proc/meminfo)"
 
 # Set Original Module Directory
 MODULE_PATH="$(dirname $(readlink -f "$0"))"
@@ -26,9 +27,9 @@ conf_zram_param()
         *) zram_disksize=4 ;;
     esac
 
-    # load algorithm from file, use lz0 as default
+    # load algorithm from file, use lz4 as default
     zram_algo="$(read_cfg zram_algo)"
-    [ "$zram_algo" == "" ] && zram_algo="lz0"
+    [ "$zram_algo" == "" ] && zram_algo="lz4"
 
     # ~2.8x compression ratio
     # higher disksize result in larger space-inefficient SwapCache
@@ -77,9 +78,8 @@ setup_hybrid_swap()
 conf_vm_param()
 {
     set_val "15" "$VM"/dirty_ratio
-    set_val "10" "$VM"/dirty_background_ratio
-    set_val "102400" "$VM"/extra_free_kbytes
-    set_val "12288" "$VM"/min_free_kbytes
+    set_val "8" "$VM"/dirty_background_ratio
+    set_val "51200" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "5000" "$VM"/dirty_writeback_centisecs
     
@@ -88,6 +88,22 @@ conf_vm_param()
 
     # Use multiple threads to run kswapd for better swapping performance
     set_val "8" "$VM"/kswapd_threads
+    
+    # Fair cache
+    set_val "100" "$VM"/vfs_cache_pressure
+    
+    # Set higher swappiness for ZRAM
+    if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
+        set_val "160" "$VM"/swappiness
+        set_val "160" /dev/memcg/memory.swappiness
+        set_val "160" /dev/memcg/apps/memory.swappiness
+        set_val "160" /dev/memcg/system/memory.swappiness
+    else
+        set_val "100" "$VM"/swappiness
+        set_val "100" /dev/memcg/memory.swappiness
+        set_val "100" /dev/memcg/apps/memory.swappiness
+        set_val "100" /dev/memcg/system/memory.swappiness
+    fi
 }
 
 write_conf_file()
@@ -111,6 +127,8 @@ write_conf_file()
     write_cfg "$(swapfile_status)"
     write_cfg ""
     write_cfg "[Settings]"
+    write_cfg "# Please reboot device everytime configuration is changed"
+    write_cfg ""
     write_cfg "# ZRAM Available size (GB): 0 / 0.5 / 1 / 1.5 / 2 / 2.5 / 3 / 4 / 5 / 6 / 8"
     write_cfg "zram_disksize=$zram_disksize"
     write_cfg "# Available compression algorithm: $(get_avail_comp_algo)"
@@ -130,23 +148,30 @@ write_conf_file()
         write_cfg "zram_writeback_rate=$zram_writeback_rate"
         write_cfg ""
     fi
-    write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
-    write_cfg "high_load_threshold=$high_load_threshold"
+    write_cfg "# Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg"
+    write_cfg "enable_dynamic_swappiness=$enable_dynamic_swappiness"
     write_cfg ""
-    write_cfg "# Dynamic Swappiness: Medium Load Threshold. Default value is 30 (Recommended value between 25 ~ 50)"
-    write_cfg "medium_load_threshold=$medium_load_threshold"
-    write_cfg ""
-    write_cfg "# Swappiness rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
-    write_cfg "swappiness_change_rate=$swappiness_change_rate"
+    if [ "$(read_cfg enable_dynamic_swappiness)" == "1" ]; then
+        write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
+        write_cfg "high_load_threshold=$high_load_threshold"
+        write_cfg ""
+        write_cfg "# Dynamic Swappiness: Medium Load Threshold. Default value is 30 (Recommended value between 25 ~ 50)"
+        write_cfg "medium_load_threshold=$medium_load_threshold"
+        write_cfg ""
+        write_cfg "# Dynamic Swappiness rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
+        write_cfg "swappiness_change_rate=$swappiness_change_rate"
+    fi
+    if [ -f "/sys/kernel/mi_reclaim" ] || [ -f "/d/rtmm" ] || [ -f "/sys/kernel/mm/rtmm" ]; then
+        write_cfg "# Mi reclaim. Set value to 0 to turn off and 1 to turn on"
+        write_cfg "mi_reclaim=$mi_reclaim"
+    fi
 }
-
-# Wait until boot finish
-resetprop -w sys.boot_completed 0
-sleep 2.5
 
 # Disable all swap partitions
 swap_all_off
-zram_reset
+
+# Wait until boot finish
+resetprop -w sys.boot_completed 0
 
 # We must wait until device is unlocked, or we can't write to /sdcard
 wait_until_unlock
@@ -157,14 +182,16 @@ conf_zram_param
 # Start the rest of the script a little late to avoid collisions
 sleep 10
 
-# Configure virtual machine parameters
-conf_vm_param
-
 # Test if system supports swappiness > 100
 test_swappiness
 
-# Start dynamic swappiness
-start_dynamic_swappiness
+enable_dynamic_swappiness="$(read_cfg enable_dynamic_swappiness)"
+[ "$enable_dynamic_swappiness" == "" ] && enable_dynamic_swappiness=0
+
+if [ "$(read_cfg enable_dynamic_swappiness)" == 1 ]; then
+        # Start dynamic swappiness
+        start_dynamic_swappiness
+fi
 
 # Start intelligent ZRAM writeback
 start_auto_zram_writeback
@@ -181,19 +208,20 @@ change_task_nice "oom_reaper"
 # Start Filesystem Cache Control
 "$MODULE_PATH"/system/bin/fscc
 
-# Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
-if [ "$MEM_TOTAL" -le 3145728 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
-elif [ "$MEM_TOTAL" -le 4194304 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
-elif [ "$MEM_TOTAL" -gt 4194304 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
-fi
+# Configure mi_reclaim
+set_val "0" /sys/kernel/mi_reclaim/enable
+
+# Configure virtual machine parameters
+conf_vm_param
 
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
 
-sleep 300
+nohup "$MODULE_PATH"/system/bin/set_swappiness > /dev/null 2>&1 &
+
+# Wait a little longer to avoid collisions
+sleep 60
+
 # Optimize LMKD Minfree Levels, Thanks to helloklf @ GitHub
 if [ "$MEM_TOTAL" -le 3145728 ]; then
     resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
