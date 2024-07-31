@@ -3,6 +3,7 @@
 * Opt: [Readjust Userspace LMKD and vm.swappiness values](https://blog.51cto.com/u_16213570/9370516)
 * Opt: Use LZ4 as default ZRAM compression algorithm; LZ0 is only sufficient on MIUI/HyperOS-based ROMS
 * Opt: Don't change the vm.min_free_kbytes parameter and just let the system handle it
+* Opt: Swappiness is set to 60 and page-cluster is set to 3 if user only uses swapfile
 * Fixed: Swapfile size doesn't change when changing it on the configuration file after reboot
 * Fixed: Filesystem Cache Control doesn't start
 * Fixed: LMKD minfree levels doesn't execute properly
