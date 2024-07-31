@@ -1,7 +1,7 @@
 # v3.0
 * Opt: Rewritten features that run in the background using C++ and compiled with O3 + LTO for improved execution performance (Still an early phase)
 * Opt: [Readjust Userspace LMKD and vm.swappiness values](https://blog.51cto.com/u_16213570/9370516)
-* Opt: [Swappiness is set to 60 and page-cluster is set to 3 if user only uses swapfile](https://www.slideshare.net/slideshow/extreme-linux-performance-monitoring-and-tuning/9822577)
+* Opt: [Swappiness is set to 60 and page-cluster is set to 3 if user only uses swapfile](https://www.slideshare.net/slideshow/extreme-linux-performance-monitoring-and-tuning/9822577) (If dynamic memory system is enabled, swappiness/vfs_cache_pressure is set to: 40/200 on high load; 60/150 on medium load; 85/110 on low load).
 * Opt: Use LZ4 as default ZRAM compression algorithm; LZ0 is only sufficient on MIUI/HyperOS-based ROMS
 * Opt: Don't change the vm.min_free_kbytes parameter and just let the system handle it
 * Fixed: Swapfile size doesn't change when changing it on the configuration file after reboot
