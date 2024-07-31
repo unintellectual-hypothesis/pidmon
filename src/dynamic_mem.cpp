@@ -205,7 +205,7 @@ void startDynamicMemSystem()
                 if (swapfileOnly)
                 {
                     newSwappiness = "40";
-                    newCachePressure = "200";
+                    newCachePressure = "180";
                 }
                 else
                 {

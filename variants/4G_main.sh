@@ -23,7 +23,7 @@ conf_zram_param()
     # load size from file
     zram_disksize="$(read_cfg zram_disksize)"
     case "$zram_disksize" in
-        0|0.5|1|1.5|2|2.5|3|4|5|6|8) ;;
+        0|0.5|1|1.5|2|2.5|3|3.5|4|5|6|8) ;;
         *) zram_disksize=2.5 ;;
     esac
 
@@ -153,13 +153,13 @@ write_conf_file()
     write_cfg "enable_dynamic_mem_system=$enable_dynamic_mem_system"
     if [ "$(read_cfg enable_dynamic_mem_system)" == "1" ]; then
         write_cfg ""
-        write_cfg "# Dynamic Swappiness: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
+        write_cfg "# Dynamic Memory System: High Load Threshold. Default value is 65 (Recommended value between 50 ~ 75)"
         write_cfg "high_load_threshold=$high_load_threshold"
         write_cfg ""
-        write_cfg "# Dynamic Swappiness: Medium Load Threshold. Default value is 25 (Recommended value between 25 ~ 50)"
+        write_cfg "# Dynamic Memory System: Medium Load Threshold. Default value is 25 (Recommended value between 25 ~ 50)"
         write_cfg "medium_load_threshold=$medium_load_threshold"
         write_cfg ""
-        write_cfg "# Dynamic Swappiness: Swappiness Change Rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
+        write_cfg "# Dynamic Memory System: Swappiness Change Rate. How many seconds before changing swappiness. Default is 15 seconds (Recommended 5 ~ 60)"
         write_cfg "swappiness_change_rate=$swappiness_change_rate"
     fi
     if [ -d "/sys/kernel/mi_reclaim" ] || [ -d "/d/rtmm" ] || [ -d "/sys/kernel/mm/rtmm" ]; then
