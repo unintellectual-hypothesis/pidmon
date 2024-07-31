@@ -32,6 +32,17 @@ void executeCommand(const char* command)
     }
 }
 
+// 문자열의 양쪽 끝에서 공백을 자르는 함수
+std::string trim(const std::string &str) {
+    size_t start = str.find_first_not_of(" \t\n\r");
+    size_t end = str.find_last_not_of(" \t\n\r");
+    if (start == std::string::npos || end == std::string::npos) {
+        return "";
+    }
+    return str.substr(start, end - start + 1);
+}
+
+// 셸 명령에서 출력 가져오기
 std::string getCommandOutput(const std::string &command)
 {
     int pipefd[2];
@@ -143,14 +154,14 @@ void startAutoZRAMwriteback() {
     int appSwitch = 0;
 
     while (true) {
-        std::string PREV_APP = getCommandOutput("dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}'");
+        std::string PREV_APP = trim(getCommandOutput("dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}'"));
         
-        int memTotal = std::stoi(getCommandOutput("awk '/^MemTotal:/{print $2}' /proc/meminfo"));
-        int memAvail = std::stoi(getCommandOutput("awk '/^MemAvailable:/{print $2}' /proc/meminfo"));
+        int memTotal = std::stoi(trim(getCommandOutput("awk '/^MemTotal:/{print $2}' /proc/meminfo")));
+        int memAvail = std::stoi(trim(getCommandOutput("awk '/^MemAvailable:/{print $2}' /proc/meminfo")));
         int minMemAvail = memTotal / 5;
 
         if (memAvail <= minMemAvail) {
-            std::string displayState = getCommandOutput("dumpsys display | awk -F '=' '/mScreenState/ {print $2}'");
+            std::string displayState = trim(getCommandOutput("dumpsys display | awk -F '=' '/mScreenState/ {print $2}'"));
             
             if (displayState == "OFF") {
                 modValue("all", ZRAM_SYS + "idle");
@@ -160,13 +171,13 @@ void startAutoZRAMwriteback() {
         }
 
         if (PREV_APP != CURRENT_APP) {
-            if (!PREV_APP.empty()) {
+            if (!(PREV_APP.empty())) {
                 appSwitch++;
             }
         }
 
         if (appSwitch > appSwitchThreshold) {
-            std::string displayState = getCommandOutput("dumpsys display | awk -F '=' '/mScreenState/ {print $2}'");
+            std::string displayState = trim(getCommandOutput("dumpsys display | awk -F '=' '/mScreenState/ {print $2}'"));
 
             if (WRITEBACK_NUM > 5) {
                 WRITEBACK_NUM = 0;

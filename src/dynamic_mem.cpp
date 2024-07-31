@@ -1,17 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <csignal>
 #include <cstdlib>
 
 const std::string VM_PATH = "/proc/sys/vm/";
 const std::string CFG_PATH = "/sdcard/Android/fog_mem_config.txt";
-std::shared_ptr<std::string> enableDynamicMemSystem = std::make_shared<std::string>("");
 std::shared_ptr<std::string> highLoadThreshold = std::make_shared<std::string>("");
 std::shared_ptr<std::string> mediumLoadThreshold = std::make_shared<std::string>("");
 std::shared_ptr<std::string> swappinessChangeRate = std::make_shared<std::string>("");
@@ -47,6 +46,7 @@ void executeCommand(const char* command)
     }
 }
 
+// 셸 명령에서 출력 가져오기
 std::string getCommandOutput(const std::string &command)
 {
     int pipefd[2];
@@ -85,6 +85,16 @@ std::string getCommandOutput(const std::string &command)
 
         return result;
     }
+}
+
+// 문자열의 양쪽 끝에서 공백을 자르는 함수
+std::string trim(const std::string &str) {
+    size_t start = str.find_first_not_of(" \t\n\r");
+    size_t end = str.find_last_not_of(" \t\n\r");
+    if (start == std::string::npos || end == std::string::npos) {
+        return "";
+    }
+    return str.substr(start, end - start + 1);
 }
 
 // 구성 파일에서 값 읽기
@@ -146,7 +156,7 @@ inline void testSwappiness(bool& swappinessOverHundred)
 // 스왑 및 VFS 캐시 압력을 동적으로 설정하는 기능
 void startDynamicMemSystem()
 {
-    swappinessOverHundred = false;
+    testSwappiness(swappinessOverHundred);
 
     // 기본값으로 구성에서 임계값 읽기
     *highLoadThreshold = readConfig("high_load_threshold");
@@ -166,15 +176,20 @@ void startDynamicMemSystem()
 
     while(true)
     {
-        std::string APP = getCommandOutput("dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}'");
-        if(!APP.empty()) {
+        std::string displayState = trim(getCommandOutput("dumpsys display | awk -F '=' '/mScreenState/ {print $2}'"));
+        if(displayState == "OFF")
+        {
+            sleep(std::stoi(*swappinessChangeRate));
+        }
+        else
+        {
             // /proc/loadavg의 첫 번째 열을 읽습니다
             std::ifstream loadavgFilePath("/proc/loadavg");
-            double loadavg;
-            loadavgFilePath >> loadavg;
+            double loadAvg;
+            loadavgFilePath >> loadAvg;
             loadavgFilePath.close();
 
-            int loadValue = static_cast<int>((loadavg * 100) / 8);
+            int loadValue = static_cast<int>(loadAvg * 100 / 8);
 
             std::string newSwappiness;
             std::string newCachePressure;
@@ -222,11 +237,13 @@ void startDynamicMemSystem()
                     newCachePressure = "110";
                 }
             }
+
             modValue(newSwappiness, VM_PATH + "swappiness");
             modValue(newCachePressure, VM_PATH + "vfs_cache_pressure");
+
+            // 오버헤드를 줄이기 위해 동적 스왑 및 VFS 캐시 압력의 간격을 설정합니다
+            sleep(std::stoi(*swappinessChangeRate));
         }
-        // 오버헤드를 줄이기 위해 동적 스왑 및 VFS 캐시 압력의 간격을 설정합니다
-        sleep(stoi(*swappinessChangeRate));
     }
 }
 
