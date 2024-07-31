@@ -10,7 +10,7 @@ resetprop -n ro.lmk.critical 800
 resetprop -n ro.lmk.swap_free_low_percentage 5
 resetprop -n ro.lmk.enhance_batch_kill false
 resetprop -n ro.lmk.enable_adaptive_lmk false
-resetprop -n ro.lmk.use_minfree_levels false
+resetprop -n ro.lmk.use_minfree_levels true
 resetprop -n ro.lmk.critical_upgrade true
 resetprop -n ro.lmk.upgrade_pressure 100
 resetprop -n ro.lmk.downgrade_pressure 100
