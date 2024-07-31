@@ -1,3 +1,5 @@
+// PROTOTOYPE WRITTEN BY unintellectual-hypothesis @ GitHub
+
 #include <iostream>
 #include <fstream>
 #include <string>
