@@ -100,10 +100,10 @@ conf_vm_param()
         set_val "160" /dev/memcg/apps/memory.swappiness
         set_val "160" /dev/memcg/system/memory.swappiness
     else
-        set_val "100" "$VM"/swappiness
-        set_val "100" /dev/memcg/memory.swappiness
-        set_val "100" /dev/memcg/apps/memory.swappiness
-        set_val "100" /dev/memcg/system/memory.swappiness
+        set_val "60" "$VM"/swappiness
+        set_val "60" /dev/memcg/memory.swappiness
+        set_val "60" /dev/memcg/apps/memory.swappiness
+        set_val "60" /dev/memcg/system/memory.swappiness
     fi
 }
 

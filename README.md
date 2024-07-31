@@ -10,7 +10,7 @@ Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on othe
 - Higher low pages-free zone with vm.extra_free_kbytes to reduce the probability of direct memory allocation (reduce random freezes during memory pressure)
 - Injects essential libs and SystemUI to cache and prevent them from being swapped out to ZRAM or Swapfile by the kernel which makes the system unresponsive
 - At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm
-- Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR (Hybrid swap setup is by default turned off and can be turned on in the config file)
+- Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR while using TRIM to improve UFS lifespan (Hybrid swap setup is by default turned off and can be turned on in the config file)
 -  Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
 - Automatic ZRAM disksize based on RAM variants 3GB/4GB/6GB (ZRAM disksize is customizable, but setting it too high will add a CPU overhead and inefficient compressed pagecache)
 - Set higher CUR_MAX_CACHED_PROCESSES. For more info check out [here](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md).

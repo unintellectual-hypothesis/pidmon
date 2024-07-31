@@ -78,7 +78,7 @@ setup_hybrid_swap()
 
 conf_vm_param()
 {
-    set_val "15" "$VM"/dirty_ratio
+    set_val "12" "$VM"/dirty_ratio
     set_val "8" "$VM"/dirty_background_ratio
     set_val "76800" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
@@ -100,10 +100,10 @@ conf_vm_param()
         set_val "160" /dev/memcg/apps/memory.swappiness
         set_val "160" /dev/memcg/system/memory.swappiness
     else
-        set_val "100" "$VM"/swappiness
-        set_val "100" /dev/memcg/memory.swappiness
-        set_val "100" /dev/memcg/apps/memory.swappiness
-        set_val "100" /dev/memcg/system/memory.swappiness
+        set_val "60" "$VM"/swappiness
+        set_val "60" /dev/memcg/memory.swappiness
+        set_val "60" /dev/memcg/apps/memory.swappiness
+        set_val "60" /dev/memcg/system/memory.swappiness
     fi
 }
 

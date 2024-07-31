@@ -49,6 +49,7 @@ swapfile_on()
             set_val "512" "$PPR"/per_swap_size
         fi
     else
+        set_val "3" $VM/page-cluster
         set_val "0" "$PPR"/enable_process_reclaim
     fi
 }
