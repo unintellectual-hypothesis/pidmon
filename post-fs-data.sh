@@ -1,4 +1,5 @@
 #!/system/bin/sh
+# Huge credits to helloklf @ GitHub
 MODDIR=${0%/*}
 
 # Userspace LMKD Optimization
