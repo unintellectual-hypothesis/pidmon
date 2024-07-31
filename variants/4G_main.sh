@@ -79,7 +79,7 @@ setup_hybrid_swap()
 conf_vm_param()
 {
     set_val "15" "$VM"/dirty_ratio
-    set_val "6" "$VM"/dirty_background_ratio
+    set_val "8" "$VM"/dirty_background_ratio
     set_val "76800" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "4500" "$VM"/dirty_writeback_centisecs
