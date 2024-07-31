@@ -1,5 +1,3 @@
-// PROTOTOYPE WRITTEN BY unintellectual-hypothesis @ GitHub
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -159,6 +157,7 @@ inline void testSwappiness(bool& swappinessOverHundred)
 void startDynamicMemSystem()
 {
     testSwappiness(swappinessOverHundred);
+    bool swapfileOnly = (std::stoi(readConfig("zram_disksize")) == 0);
 
     // 기본값으로 구성에서 임계값 읽기
     *highLoadThreshold = readConfig("high_load_threshold");
@@ -196,47 +195,76 @@ void startDynamicMemSystem()
             std::string newSwappiness;
             std::string newCachePressure;
 
-            if (loadValue > std::stoi(*highLoadThreshold))
+            if (swapfileOnly)
             {
                 executeCommand("resetprop -n ro.lmk.use_minfree_levels false");
-                if (swappinessOverHundred)
+            }
+
+            if (loadValue > std::stoi(*highLoadThreshold))
+            {
+                if (swapfileOnly)
                 {
-                    newSwappiness = "100";
-                    newCachePressure = "175";
+                    newSwappiness = "40";
+                    newCachePressure = "200";
                 }
                 else
                 {
-                    newSwappiness = "85";
-                    newCachePressure = "175";
+                    executeCommand("resetprop -n ro.lmk.use_minfree_levels false");
+                    if (swappinessOverHundred)
+                    {
+                        newSwappiness = "100";
+                        newCachePressure = "175";
+                    }
+                    else
+                    {
+                        newSwappiness = "85";
+                        newCachePressure = "175";
+                    }
                 }
 
             }
             else if (loadValue > std::stoi(*mediumLoadThreshold))
             {
-                executeCommand("resetprop -n ro.lmk.use_minfree_levels true");
-                if (swappinessOverHundred)
+                if (swapfileOnly)
                 {
-                    newSwappiness = "150";
-                    newCachePressure = "140";
+                    newSwappiness = "60";
+                    newCachePressure = "150";
                 }
                 else
                 {
-                    newSwappiness = "90";
-                    newCachePressure = "140";
+                    executeCommand("resetprop -n ro.lmk.use_minfree_levels true");
+                    if (swappinessOverHundred)
+                    {
+                        newSwappiness = "150";
+                        newCachePressure = "140";
+                    }
+                    else
+                    {
+                        newSwappiness = "90";
+                        newCachePressure = "140";
+                    }
                 }
             }
             else
             {
-                executeCommand("resetprop -n ro.lmk.use_minfree_levels true");
-                if (swappinessOverHundred)
+                if (swapfileOnly)
                 {
-                    newSwappiness = "165";
-                    newCachePressure = "110";
+                    newSwappiness = "85";
+                    newCachePressure = "120";                    
                 }
                 else
                 {
-                    newSwappiness = "100";
-                    newCachePressure = "110";
+                    executeCommand("resetprop -n ro.lmk.use_minfree_levels true");
+                    if (swappinessOverHundred)
+                    {
+                        newSwappiness = "165";
+                        newCachePressure = "110";
+                    }
+                    else
+                    {
+                        newSwappiness = "100";
+                        newCachePressure = "110";
+                    }
                 }
             }
 
