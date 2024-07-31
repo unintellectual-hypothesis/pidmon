@@ -78,8 +78,8 @@ setup_hybrid_swap()
 
 conf_vm_param()
 {
-    set_val "10" "$VM"/dirty_ratio
-    set_val "5" "$VM"/dirty_background_ratio
+    set_val "15" "$VM"/dirty_ratio
+    set_val "6" "$VM"/dirty_background_ratio
     set_val "76800" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "4500" "$VM"/dirty_writeback_centisecs
@@ -170,7 +170,7 @@ write_conf_file()
     write_cfg ""
 }
 
-# Disable all swap partitions
+# Disable all swap partitions before finish booting
 swap_all_off
 
 # Wait until boot finish
@@ -190,7 +190,7 @@ medium_load_threshold="$(read_cfg medium_load_threshold)"
 [ "$medium_load_threshold" == "" ] && medium_load_threshold="25"
 swappiness_change_rate="$(read_cfg swappiness_change_rate)"
 [ "$swappiness_change_rate" == "" ] && swappiness_change_rate="10"
-enable_dynamic_mem_system="$(read_cfg "$enable_dynamic_mem_system")"
+enable_dynamic_mem_system="$(read_cfg enable_dynamic_mem_system)"
 [ "$enable_dynamic_mem_system" == "" ] && enable_dynamic_mem_system="1"
 
 # Configure ZRAM
@@ -204,12 +204,12 @@ conf_vm_param
 
 # Start dynamic swappiness
 if [ "$enable_dynamic_mem_system" == 1 ]; then
-        "$MODULE_PATH"/system/bin/dynamic_mem
+        "$MODULE_PATH"/system/bin/dynamic_mem &
 fi
 
 # Start intelligent ZRAM writeback
 if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
-        nohup "$MODULE_PATH"/system/bin/intelligent_zram_writeback > /dev/null 2>&1 &
+        "$MODULE_PATH"/system/bin/intelligent_zram_writeback &
 fi
 
 # Initialize hybrid swap setup, if enabled
@@ -225,25 +225,15 @@ change_task_nice "oom_reaper"
 conf_mi_reclaim
 
 # Start Filesystem Cache Control and wait for a minute
-"$MODULE_PATH"/system/bin/fscc && sleep 30 &
+"$MODULE_PATH"/system/bin/fscc &
 
 # Configuration file in /sdcard/Android/fog_mem_config.txt
 write_conf_file
 
 # Optimize LMKD Minfree Levels for 4GB, Thanks to helloklf @ GitHub
-if [ "$MEM_TOTAL" -le 3145728 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900,39936:950
-elif [ "$MEM_TOTAL" -le 4194304 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
-elif [ "$MEM_TOTAL" -gt 4194304 ]; then
-    resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,32768:250,56320:900,71680:950
-fi
+resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,24576:250,32768:900,47360:950
 
 # Set higher CUR_MAX_CACHED_PROCESSES for 4GB
-if [ "$MEM_TOTAL" -gt 4194304 ]; then
-    /system/bin/device_config put activity_manager max_cached_processes 128
-else
-    /system/bin/device_config put activity_manager max_cached_processes 64
-fi
+/system/bin/device_config put activity_manager max_cached_processes 64
 
 exit 0
