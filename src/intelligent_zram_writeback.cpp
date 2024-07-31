@@ -135,18 +135,13 @@ void modValue(const std::string& val, const std::string& filePath)
 
 }
 
-bool zramWritebackSupport()
-{
-    return (fileExists(ZRAM_SYS + "writeback") && fileExists(ZRAM_SYS + "backing_dev"));
-}
-
 
 // 자동 ZRAM 쓰기백 시작
 void startAutoZRAMwriteback() {
     int appSwitchThreshold = std::stoi(readConfig("app_switch_threshold"));
     if (appSwitchThreshold == 0) appSwitchThreshold = 10;
 
-    int ZRAMwritebackRate = std::stoi(readConfig("ZRAMwritebackRate"));
+    int ZRAMwritebackRate = std::stoi(readConfig("zram_writeback_rate"));
     if (ZRAMwritebackRate == 0) ZRAMwritebackRate = 10;
 
     int WRITEBACK_NUM = 0;
@@ -156,8 +151,8 @@ void startAutoZRAMwriteback() {
     while (true) {
         std::string PREV_APP = trim(getCommandOutput("dumpsys activity lru | grep 'TOP' | awk 'NR==1' | awk -F '[ :/]+' '{print $7}'"));
         
-        int memTotal = std::stoi(trim(getCommandOutput("awk '/^MemTotal:/{print $2}' /proc/meminfo")));
-        int memAvail = std::stoi(trim(getCommandOutput("awk '/^MemAvailable:/{print $2}' /proc/meminfo")));
+        int memTotal = std::stoi(getCommandOutput("awk '/^MemTotal:/{print $2}' /proc/meminfo"));
+        int memAvail = std::stoi(getCommandOutput("awk '/^MemAvailable:/{print $2}' /proc/meminfo"));
         int minMemAvail = memTotal / 5;
 
         if (memAvail <= minMemAvail) {
@@ -189,7 +184,7 @@ void startAutoZRAMwriteback() {
                 WRITEBACK_NUM++;
                 appSwitch = 0;
             } else {
-                if (WRITEBACK_NUM < 4) {
+                if (WRITEBACK_NUM < 5) {
                     modValue("huge", ZRAM_SYS + "writeback");
                     WRITEBACK_NUM++;
                     appSwitch = 0;
@@ -203,36 +198,5 @@ void startAutoZRAMwriteback() {
 }
 
 int main() {
-    pid_t pid, sid;
-
-    pid = fork();
-
-    if (pid < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    if (pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
-
-    umask(0);
-
-    sid = setsid();
-    if (sid < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    if ((chdir("/")) < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-
-    signal(SIGTERM, signalHandler);
-
     startAutoZRAMwriteback();
-
-    exit(EXIT_SUCCESS);
 }
