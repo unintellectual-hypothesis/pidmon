@@ -15,6 +15,7 @@ std::shared_ptr<std::string> highLoadThreshold = std::make_shared<std::string>("
 std::shared_ptr<std::string> mediumLoadThreshold = std::make_shared<std::string>("");
 std::shared_ptr<std::string> swappinessChangeRate = std::make_shared<std::string>("");
 bool swappinessOverHundred;
+bool isNoSys;
 
 
 // 클린 셧다운을 위한 신호 처리기
@@ -143,20 +144,30 @@ void modValue(const std::string& val, const std::string& filePath)
 }
 
 // 디바이스가 스왑을 지원하는지 테스트 > 100
-inline void testSwappiness(bool& swappinessOverHundred)
+inline void testSwappiness(bool& swappinessOverHundred, bool& isNoSys)
 {
-    modValue("165", VM_PATH + "swappiness");
-    std::ifstream swappinessPath(VM_PATH + "swappiness");
+    isNoSys = (fileExists(VM_PATH + "swappiness_nosys"));
+    std::ifstream swappinessPath;
+    if (isNoSys)
+    {
+        modValue("160", VM_PATH + "swappiness_nosys");
+        swappinessPath.open(VM_PATH + "swappiness_nosys");
+    }
+    else
+    {
+        modValue("160", VM_PATH + "swappiness");
+        swappinessPath.open(VM_PATH + "swappiness");
+    }
     int newSwappinessValue;
     swappinessPath >> newSwappinessValue;
     swappinessPath.close();
-    swappinessOverHundred = (newSwappinessValue == 165);
+    swappinessOverHundred = (newSwappinessValue == 160);
 }
 
 // 스왑 및 VFS 캐시 압력을 동적으로 설정하는 기능
 void startDynamicMemSystem()
 {
-    testSwappiness(swappinessOverHundred);
+    testSwappiness(swappinessOverHundred, isNoSys);
     bool swapfileOnly = (std::stoi(readConfig("zram_disksize")) == 0);
 
     // 기본값으로 구성에서 임계값 읽기
@@ -267,8 +278,14 @@ void startDynamicMemSystem()
                     }
                 }
             }
-
-            modValue(newSwappiness, VM_PATH + "swappiness");
+            if (isNoSys)
+            {
+                modValue(newSwappiness, VM_PATH + "swappiness_nosys");
+            }
+            else
+            {
+                modValue(newSwappiness, VM_PATH + "swappiness");
+            }
             modValue(newCachePressure, VM_PATH + "vfs_cache_pressure");
 
             // 오버헤드를 줄이기 위해 동적 스왑 및 VFS 캐시 압력의 간격을 설정합니다
