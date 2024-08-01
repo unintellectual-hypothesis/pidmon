@@ -2,7 +2,7 @@
 * Opt: Set default swappiness value to 200 IF AND ONLY IF: ZRAM size ≤ 50% of RAM, ZRAM compression algorithm is lz4, and hybrid swap is turned off
 * Opt: Making sure to disable ro.lmk.thrashing_limit_critical and persist.device_config.lmkd_native.thrashing_limit_critical on some custom ROMS and use default value for ro.lmk.critical_upgrade; use default thrashing limit userspace LMKD configuration parameter
 * Opt: Raise vm.extra_free_kbytes a little due to less aggressive userspace LMKD minfree
-* Add: Support for /proc/sys/vm/swappiness_nosys parameter on some kernels | Thanks to @Marianauwul
+* Add: Support for /proc/sys/vm/swappiness_nosys parameter on some kernels | Thanks to LeanHijosdesusMadres @ Telegram
 
 
 # v3.0
