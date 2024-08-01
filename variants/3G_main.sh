@@ -17,6 +17,16 @@ MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 # According to function
 zram_disksize=""
 zram_algo=""
+is_nosys=""
+
+check_nosys()
+{
+    if [ -f "$VM"/swappiness_nosys ]; then
+        is_nosys=1
+    else
+        is_nosys=0
+    fi
+}
 
 conf_zram_param()
 {
@@ -80,7 +90,7 @@ conf_vm_param()
 {
     set_val "8" "$VM"/dirty_ratio
     set_val "3" "$VM"/dirty_background_ratio
-    set_val "51200" "$VM"/extra_free_kbytes
+    set_val "76800" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "4000" "$VM"/dirty_writeback_centisecs
     
@@ -95,12 +105,20 @@ conf_vm_param()
     
     # Set higher swappiness for ZRAM
     if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
-        set_val "160" "$VM"/swappiness
+        if [ is_nosys -eq 1 ]; then
+            set_val "160" "$VM"/swappiness_nosys
+        else
+            set_val "160" "$VM"/swappiness
+        fi
         set_val "160" /dev/memcg/memory.swappiness
         set_val "160" /dev/memcg/apps/memory.swappiness
         set_val "160" /dev/memcg/system/memory.swappiness
     else
-        set_val "60" "$VM"/swappiness
+        if [ is_nosys -eq 1 ]; then
+            set_val "60" "$VM"/swappiness_nosys
+        else
+            set_val "60" "$VM"/swappiness
+        fi
         set_val "60" /dev/memcg/memory.swappiness
         set_val "60" /dev/memcg/apps/memory.swappiness
         set_val "60" /dev/memcg/system/memory.swappiness
@@ -204,12 +222,12 @@ conf_vm_param
 
 # Start dynamic swappiness
 if [ "$enable_dynamic_mem_system" == 1 ]; then
-        "$MODULE_PATH"/system/bin/dynamic_mem &
+        "$MODULE_PATH"/system/bin/dynamic_mem
 fi
 
 # Start intelligent ZRAM writeback
 if [ "$(zram_wb_support)" -eq 1 ] && [ "$(cat "$ZRAM_SYS"/backing_dev)" != "none" ]; then
-        "$MODULE_PATH"/system/bin/intelligent_zram_writeback &
+        "$MODULE_PATH"/system/bin/intelligent_zram_writeback
 fi
 
 # Initialize hybrid swap setup, if enabled
@@ -235,5 +253,13 @@ resetprop -n sys.lmk.minfree_levels 4096:0,5120:100,8192:200,16384:250,24576:900
 
 # Set higher CUR_MAX_CACHED_PROCESSES for 3GB
 /system/bin/device_config put activity_manager max_cached_processes 64
+
+# Disable and delete native LMKD thrashing limit
+until [ "$(getprop persist.device_config.lmkd_native.thrashing_limit_critical)" == "" ]
+do
+    resetprop -n persist.device_config.lmkd_native.thrashing_limit_critical ""
+    resetprop -p --delete persist.device_config.lmkd_native.thrashing_limit_critical
+    sleep 2
+done
 
 exit 0
