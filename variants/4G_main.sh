@@ -100,19 +100,30 @@ conf_vm_param()
     # Use multiple threads to run kswapd for better swapping performance
     set_val "8" "$VM"/kswapd_threads
     
-    # Fair inode cache
-    set_val "100" "$VM"/vfs_cache_pressure
+    # Drop a little more inode cache
+    set_val "110" "$VM"/vfs_cache_pressure
     
     # Set higher swappiness for ZRAM
     if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
-        if [ is_nosys -eq 1 ]; then
-            set_val "160" "$VM"/swappiness_nosys
+        if [ "$(sed -n 's/.*\[\([^]]*\)\].*/\1/p' "$ZRAM_SYS"/comp_algorithm)" == "lz4" ] && [ "$(cat "$ZRAM_SYS"/disksize)" -le 2684354560 ] && [ "$(read_cfg enable_hybrid_swap )" -eq 1 ]; then
+            if [ is_nosys -eq 1 ]; then
+                set_val "200" "$VM"/swappiness_nosys
+            else
+                set_val "200" "$VM"/swappiness
+            fi
+            set_val "200" /dev/memcg/memory.swappiness
+            set_val "200" /dev/memcg/apps/memory.swappiness
+            set_val "200" /dev/memcg/system/memory.swappiness
         else
-            set_val "160" "$VM"/swappiness
-        fi
-        set_val "160" /dev/memcg/memory.swappiness
-        set_val "160" /dev/memcg/apps/memory.swappiness
-        set_val "160" /dev/memcg/system/memory.swappiness
+            if [ is_nosys -eq 1 ]; then
+                set_val "160" "$VM"/swappiness_nosys
+            else
+                set_val "160" "$VM"/swappiness
+            fi
+            set_val "160" /dev/memcg/memory.swappiness
+            set_val "160" /dev/memcg/apps/memory.swappiness
+            set_val "160" /dev/memcg/system/memory.swappiness
+        fi        
     else
         if [ is_nosys -eq 1 ]; then
             set_val "60" "$VM"/swappiness_nosys
@@ -133,7 +144,7 @@ write_conf_file()
     write_cfg "Redmi 10/10C/10 Power Memory Management Optimization"
     write_cfg "———————————————————————————————————"
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
-    write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
+    write_cfg "Module constructed by szchene @ Telegram // unintellectual-hypothesis @ GitHub"
     write_cfg "Last time module executed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_cfg ""
     write_cfg "[ZRAM status]"

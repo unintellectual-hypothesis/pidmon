@@ -1,6 +1,6 @@
 id=fog-memory-opt
 name=Redmi 10/10C/10 Power Memory Management Optimization
-version=v3.1 (DEBUG)
+version=v3.1
 versionCode=3100
 author=unintellectual-hypothesis
 description=Reconstructs the memory management of fog devices. Supports 3GB, 4GB, 6GB and more variants

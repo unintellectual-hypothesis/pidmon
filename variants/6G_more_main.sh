@@ -18,6 +18,17 @@ MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 zram_disksize=""
 zram_algo=""
 is_nosys=""
+is6G=""
+target_size=""
+
+check_memory()
+{
+    if [ "$MEM_TOTAL" -le 6291456 ]; then
+        is6G=1
+    else
+        is6G=0
+    fi
+}
 
 check_nosys()
 {
@@ -88,9 +99,14 @@ setup_hybrid_swap()
 
 conf_vm_param()
 {
+    if [ $is6G -eq 1 ]; then
+        target_size=3145728
+    else
+        target_size=4194304
+    fi
     set_val "20" "$VM"/dirty_ratio
     set_val "10" "$VM"/dirty_background_ratio
-    set_val "102400" "$VM"/extra_free_kbytes
+    set_val "128000" "$VM"/extra_free_kbytes
     set_val "3000" "$VM"/dirty_expire_centisecs
     set_val "5000" "$VM"/dirty_writeback_centisecs
     
@@ -100,19 +116,30 @@ conf_vm_param()
     # Use multiple threads to run kswapd for better swapping performance
     set_val "8" "$VM"/kswapd_threads
     
-    # Fair
-    set_val "100" "$VM"/vfs_cache_pressure
+    # Drop a little more inode cache
+    set_val "110" "$VM"/vfs_cache_pressure
     
     # Set higher swappiness for ZRAM
     if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
-        if [ is_nosys -eq 1 ]; then
-            set_val "160" "$VM"/swappiness_nosys
+        if [ "$(sed -n 's/.*\[\([^]]*\)\].*/\1/p' "$ZRAM_SYS"/comp_algorithm)" == "lz4" ] && [ "$(cat "$ZRAM_SYS"/disksize)" -le "$target_size" ] && [ "$(read_cfg enable_hybrid_swap )" -eq 1 ]; then
+            if [ is_nosys -eq 1 ]; then
+                set_val "200" "$VM"/swappiness_nosys
+            else
+                set_val "200" "$VM"/swappiness
+            fi
+            set_val "200" /dev/memcg/memory.swappiness
+            set_val "200" /dev/memcg/apps/memory.swappiness
+            set_val "200" /dev/memcg/system/memory.swappiness
         else
-            set_val "160" "$VM"/swappiness
-        fi
-        set_val "160" /dev/memcg/memory.swappiness
-        set_val "160" /dev/memcg/apps/memory.swappiness
-        set_val "160" /dev/memcg/system/memory.swappiness
+            if [ is_nosys -eq 1 ]; then
+                set_val "160" "$VM"/swappiness_nosys
+            else
+                set_val "160" "$VM"/swappiness
+            fi
+            set_val "160" /dev/memcg/memory.swappiness
+            set_val "160" /dev/memcg/apps/memory.swappiness
+            set_val "160" /dev/memcg/system/memory.swappiness
+        fi        
     else
         if [ is_nosys -eq 1 ]; then
             set_val "60" "$VM"/swappiness_nosys
@@ -133,7 +160,7 @@ write_conf_file()
     write_cfg "Redmi 10/10C/10 Power Memory Management Optimization"
     write_cfg "———————————————————————————————————"
     write_cfg "Huge Credits to: @yc9559, @helloklf @VR-25, @pedrozzz0, @agnostic-apollo, and other developers"
-    write_cfg "Module constructed by free @ Telegram // unintellectual-hypothesis @ GitHub"
+    write_cfg "Module constructed by szchene @ Telegram // unintellectual-hypothesis @ GitHub"
     write_cfg "Last time module executed: $(date '+%Y-%m-%d %H:%M:%S')"
     write_cfg ""
     write_cfg "[ZRAM status]"
@@ -196,6 +223,12 @@ resetprop -w sys.boot_completed 0
 
 # We must wait until device is unlocked, or we can't write to /sdcard
 wait_until_unlock
+
+# Check if kernel is using swappiness_nosys parameter
+check_nosys
+
+# Check ZRAM size target
+check_memory
 
 # Load default config values
 app_switch_threshold="$(read_cfg app_switch_threshold)"

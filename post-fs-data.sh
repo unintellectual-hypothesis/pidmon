@@ -7,7 +7,7 @@ resetprop -n ro.lmk.use_new_strategy 1
 resetprop -n ro.lmk.thrashing_min_score_adj 0
 resetprop -n ro.lmk.low 1001
 resetprop -n ro.lmk.medium 1001
-resetprop -n ro.lmk.critical 800
+resetprop -n ro.lmk.critical 1001
 resetprop -n ro.lmk.swap_free_low_percentage 5
 resetprop -n ro.lmk.enhance_batch_kill false
 resetprop -n ro.lmk.enable_adaptive_lmk false
