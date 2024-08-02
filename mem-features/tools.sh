@@ -6,6 +6,14 @@ MODDIR=${0%/*}
 MEM_FEATURES_DIR="$MODULE_PATH/mem-features"
 . "$MEM_FEATURES_DIR"/paths.sh
 
+# Convert GB to bytes
+gb_to_bytes()
+{
+    local gb=$1
+    local bytes=$(echo "$gb * 1024 * 1024 * 1024" | bc)
+    echo "$bytes"
+}
+
 # To change parameter values
 set_val()
 {

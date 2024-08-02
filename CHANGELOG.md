@@ -1,3 +1,6 @@
+# v3.2
+* Fixed: Recreate swapfile even though it already existed in the first place (This will save writing lifecycle everytime the device restarts)
+
 # v3.1
 * Opt: Set default swappiness value to 200 IF AND ONLY IF: ZRAM size ≤ 50% of RAM, ZRAM compression algorithm is lz4, and hybrid swap is turned off
 * Opt: Making sure to disable ro.lmk.thrashing_limit_critical and persist.device_config.lmkd_native.thrashing_limit_critical on some custom ROMS and disable ro.lmk.critical_upgrade; use default thrashing limit userspace LMKD configuration parameter

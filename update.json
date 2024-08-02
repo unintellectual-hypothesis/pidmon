@@ -1,6 +1,6 @@
 {
-    "version": "v3.1",
-    "versionCode": 3100,
-    "zipUrl": "https://github.com/unintellectual-hypothesis/fog-memory-opt/releases/download/v3.1/fog-memory-opt-v3.1.zip",
+    "version": "v3.2",
+    "versionCode": 3200,
+    "zipUrl": "https://github.com/unintellectual-hypothesis/fog-memory-opt/releases/download/v3.2/fog-memory-opt-v3.2.zip",
     "changelog": "https://raw.githubusercontent.com/unintellectual-hypothesis/fog-memory-opt/main/CHANGELOG.md"
 }

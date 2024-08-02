@@ -26,7 +26,7 @@ swapfile_status()
 swapfile_on()
 {
     swapfile_sz="$(read_cfg swapfile_sz)"
-    prev_swapfile_sz="$(ls -l "$SWAP_DIR"/swapfile)"
+    prev_swapfile_sz="$(ls -l "$SWAP_DIR"/swapfile | awk '{print $5}')"
     if [ -f "$SWAP_DIR"/swapfile ] && [ "$prev_swapfile_sz" == "$(gb_to_bytes "$swapfile_sz")" ]; then
         toybox swapon -d "$SWAP_DIR"/swapfile -p 1111
     else
