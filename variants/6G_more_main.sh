@@ -121,7 +121,7 @@ conf_vm_param()
     
     # Set higher swappiness for ZRAM
     if [ "$(cat /proc/swaps | grep "$ZRAM_DEV")" != "" ]; then
-        if [ "$(sed -n 's/.*\[\([^]]*\)\].*/\1/p' "$ZRAM_SYS"/comp_algorithm)" == "lz4" ] && [ "$(cat "$ZRAM_SYS"/disksize)" -le "$target_size" ] && [ "$(read_cfg enable_hybrid_swap )" -eq 1 ]; then
+        if [ "$(sed -n 's/.*\[\([^]]*\)\].*/\1/p' "$ZRAM_SYS"/comp_algorithm)" == "lz4" ] && [ "$(cat "$ZRAM_SYS"/disksize)" -le "$target_size" ] && [ "$(read_cfg enable_hybrid_swap)" -eq 0 ]; then
             if [ is_nosys -eq 1 ]; then
                 set_val "200" "$VM"/swappiness_nosys
             else
