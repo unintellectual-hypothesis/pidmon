@@ -1,9 +1,11 @@
-#  Redmi 10C Memory Management Optimization
+# Redmi 10C Memory Management Optimization
+
 Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
- 
+
 "Standing on the shoulders of giants"
 
 ## Features?
+
 - Dynamic vm.swappiness and vm.vfs_cache_pressure based on CPU and I/O load, supports both kernel with swappiness over 100 and swappiness less than 100 like the fog-kribo kernel (Configurable)
 - Optimizes LMKD to reduce the chance of background apps being killed
 - If ROM supports Xiaomi RAM Extension and /sys/block/zram0/writeback, perform small ZRAM Writeback after opening more than a certain number of apps and perform large ZRAM writeback when the phone is off (Configurable)
@@ -11,11 +13,12 @@ Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on othe
 - Injects essential libs and SystemUI to cache and prevent them from being swapped out to ZRAM or Swapfile by the kernel which makes the system unresponsive
 - At least an ideal 2.8x ZRAM Compression Ratio, regardless of compression algorithm
 - Configure hybrid swap setup on /data/lswap/swapfile with swapfile being a lower priority than ZRAM, utilizing Qualcomm's PPR while using TRIM to improve UFS lifespan (Hybrid swap setup is by default turned off and can be turned on in the config file)
--  Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
+- Change the affinity of kswapd and oom_reaper to use power-efficient CPUs with renice, and use number of maximum CPU core to run kswapd to improve swapping performance
 - Automatic ZRAM disksize based on RAM variants 3GB/4GB/6GB (ZRAM disksize is customizable, but setting it too high will add a CPU overhead and inefficient compressed pagecache)
 - Set higher CUR_MAX_CACHED_PROCESSES. For more info check out [here](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md).
 
 ## 특징?
+
 - CPU 및 I/O 부하에 기반한 동적 vm.swappiness 및 vm.vfs_cache_pressure, 100 이상의 스와핑을 가진 커널과 fog-kribo 커널과 같은 100 미만의 스와핑을 모두 지원 (구성 가능).
 - 백그라운드 앱이 종료될 가능성을 줄이기 위해 LMKD 최적화
 - ROM이 Xiaomi RAM 확장 및 /sys/block/zram0/writeback을 지원하는 경우, 일정 수 이상의 앱을 연 후 작은 ZRAM 쓰기백을 수행하고 전화기가 꺼져있을 때 큰 ZRAM 쓰기백을 수행합니다(구성 가능).
@@ -28,28 +31,31 @@ Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on othe
 - CUR_MAX_CACHED_PROCESSES를 높게 설정합니다. 자세한 내용은 [여기](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)를 참조하세요.
 
 ## Installation
+
 Download the latest release and flash the file on Magisk/KernelSU. Configuration file in /sdcard/Android/fog_mem_config.txt
 
 ## References
-* [ZRAM Performance Tuning](https://juejin.cn/post/7147284908367413261)
-* [ZRAM Intelligent Writeback](https://developer.aliyun.com/article/1230689)
-* [Hybrid Swapping based on Per-Process Reclaim](https://ieeexplore.ieee.org/document/8478216)
-* [Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg](https://github.com/VR-25/zram-swap-manager)
-* [KSWAPD and OOM Reaper affinity to save power](https://github.com/yc9559/qti-mem-opt)
-* [ZRAM Disksize based on RAM variants](https://dumps.tadiphone.dev/dumps/oneplus/op5566l1/-/blob/sys_mssi_64_cn_armv82-user-13-TP1A.220905.001-1685974352305-release-keys--IN/vendor/bin/swap_enable.sh)
-* [Adjusts userspace LMKD and Swappiness value to reduce chances of background apps killed](https://blog.51cto.com/u_16213570/9370516)
+
+- [ZRAM Performance Tuning](https://juejin.cn/post/7147284908367413261)
+- [ZRAM Intelligent Writeback](https://developer.aliyun.com/article/1230689)
+- [Hybrid Swapping based on Per-Process Reclaim](https://ieeexplore.ieee.org/document/8478216)
+- [Dynamic Swappiness and VFS Cache Pressure based on /proc/loadavg](https://github.com/VR-25/zram-swap-manager)
+- [KSWAPD and OOM Reaper affinity to save power](https://github.com/yc9559/qti-mem-opt)
+- [ZRAM Disksize based on RAM variants](https://dumps.tadiphone.dev/dumps/oneplus/op5566l1/-/blob/sys_mssi_64_cn_armv82-user-13-TP1A.220905.001-1685974352305-release-keys--IN/vendor/bin/swap_enable.sh)
+- [Adjusts userspace LMKD and Swappiness value to reduce chances of background apps killed](https://blog.51cto.com/u_16213570/9370516)
 
 ## Credits
-@yc9559 
- 
-@crok 
- 
-@helloklf 
- 
-@VR-25 
- 
-@agnostic-apollo 
- 
-@pedrozzz0 
+
+@yc9559
+
+@crok
+
+@helloklf
+
+@VR-25
+
+@agnostic-apollo
+
+@pedrozzz0
 
 And others I might haven't mentioned.
