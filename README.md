@@ -1,7 +1,5 @@
-# Redmi 10C Memory Management Optimization
-
-Supports fog devices for 3GB/4GB/6GB and more variants (it may work well on other devices)
-
+# PID Monitor
+ 
 "Standing on the shoulders of giants"
 
 ## Features?
